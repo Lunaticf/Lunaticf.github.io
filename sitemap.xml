@@ -2,34 +2,24 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
-    <url>
-      <loc>https://example.com/categories/</loc>
-      
-      
-      
-      <priority>0</priority>
-      
-      
-    </url>
+  <url>
+    <loc>your_site_url_address/about/</loc>
+    <lastmod>2019-07-18T20:26:13+08:00</lastmod>
+  </url>
   
-    <url>
-      <loc>https://example.com/</loc>
-      
-      
-      
-      <priority>0</priority>
-      
-      
-    </url>
+  <url>
+    <loc>your_site_url_address/categories/</loc>
+    <priority>0</priority>
+  </url>
   
-    <url>
-      <loc>https://example.com/tags/</loc>
-      
-      
-      
-      <priority>0</priority>
-      
-      
-    </url>
+  <url>
+    <loc>your_site_url_address/tags/</loc>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>your_site_url_address/</loc>
+    <priority>0</priority>
+  </url>
   
 </urlset>
