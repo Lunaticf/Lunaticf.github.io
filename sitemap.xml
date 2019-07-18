@@ -3,22 +3,22 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>your_site_url_address/about/</loc>
+    <loc>https://Lunaticf.github.io/about/</loc>
     <lastmod>2019-07-18T20:26:13+08:00</lastmod>
   </url>
   
   <url>
-    <loc>your_site_url_address/categories/</loc>
+    <loc>https://Lunaticf.github.io/categories/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>your_site_url_address/tags/</loc>
+    <loc>https://Lunaticf.github.io/tags/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>your_site_url_address/</loc>
+    <loc>https://Lunaticf.github.io/</loc>
     <priority>0</priority>
   </url>
   
