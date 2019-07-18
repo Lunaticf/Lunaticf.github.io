@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>添忧杂货铺</title>
+    <title>Categories on 添忧杂货铺</title>
     <link>https://lunaticf.github.io/categories/</link>
-    <description>Recent content on 添忧杂货铺</description>
+    <description>Recent content in Categories on 添忧杂货铺</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Thu, 18 Jul 2019 21:24:15 +0800</lastBuildDate>
@@ -12,12 +12,12 @@
     
     
     <item>
-      <title>Hello</title>
-      <link>https://lunaticf.github.io/post/hello/</link>
+      <title>life</title>
+      <link>https://lunaticf.github.io/categories/life/</link>
       <pubDate>Thu, 18 Jul 2019 21:24:15 +0800</pubDate>
       
-      <guid>https://lunaticf.github.io/post/hello/</guid>
-      <description>Hello, the cruel world!</description>
+      <guid>https://lunaticf.github.io/categories/life/</guid>
+      <description></description>
     </item>
     
   </channel>

@@ -3,18 +3,6 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://lunaticf.github.io/tags/</loc>
-    <lastmod>2019-07-18T21:24:15+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://lunaticf.github.io/categories/</loc>
-    <lastmod>2019-07-18T21:24:15+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
     <loc>https://lunaticf.github.io/categories/</loc>
     <lastmod>2019-07-18T21:24:15+08:00</lastmod>
     <priority>0</priority>
@@ -33,6 +21,18 @@
   
   <url>
     <loc>https://lunaticf.github.io/tags/</loc>
+    <lastmod>2019-07-18T21:24:15+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://lunaticf.github.io/tags/hello/</loc>
+    <lastmod>2019-07-18T21:24:15+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://lunaticf.github.io/categories/life/</loc>
     <lastmod>2019-07-18T21:24:15+08:00</lastmod>
     <priority>0</priority>
   </url>
