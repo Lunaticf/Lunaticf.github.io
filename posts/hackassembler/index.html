@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		 
+			
+  
+    <meta name="twitter:card" content="summary"/>
+    
+      <meta name="twitter:image" content="https://lunaticf.github.io/images/avatar.png" />
+    
+  
+  
+  <meta name="twitter:title" content="HackAssembler"/>
+  <meta name="twitter:description" content="nand2teris - the hack assembler 已经把nand2teris的part1学完了，现在才写的原因是终于到了software hierarchy部分了，project是正"/>
+  
+  
+  
+  
+    <meta name="twitter:creator" content="@Lunaticf"/>
+  
+
+
+
+		
+		<meta name="author" content="Lunaticf">
+		<meta name="description" content="添忧杂货铺">
+		<meta name="generator" content="Hugo 0.55.6" />
+		<title>HackAssembler &middot; 添忧杂货铺</title>
+		<link rel="shortcut icon" href="https://lunaticf.github.io/images/favicon.ico">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/style.css">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/highlight.css">
+
+		
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/font-awesome.min.css">
+		
+
+		
+		<link href="https://lunaticf.github.io/index.xml" rel="alternate" type="application/rss+xml" title="添忧杂货铺" />
+		
+
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='https://lunaticf.github.io/'> <span class="arrow">←</span>Home</a>
+	
+	<a href='https://lunaticf.github.io/posts'>Archive</a>
+	<a href='https://lunaticf.github.io/tags'>Tags</a>
+	<a href='https://lunaticf.github.io/about'>About</a>
+
+	
+
+	
+	<a class="cta" href="https://lunaticf.github.io/index.xml">Subscribe</a>
+	
+</nav>
+
+
+        <section id="wrapper" class="post">
+            <article>
+                <header>
+                    <h1>
+                        HackAssembler
+                    </h1>
+                    <h2 class="headline">
+                    Sep 13, 2019 21:38
+                    · 2457 words
+                    · 5 minute read
+                      <span class="tags">
+                      
+                      
+                          
+                              <a href="https://lunaticf.github.io/tags/nand2teris">nand2teris</a>
+                          
+                      
+                      
+                      </span>
+                    </h2>
+                </header>
+                
+                <section id="post-body">
+                    
+
+<h3 id="nand2teris-the-hack-assembler">nand2teris - the hack assembler</h3>
+
+<p>已经把nand2teris的part1学完了，现在才写的原因是终于到了software hierarchy部分了，project是正式的coding..而不是讨厌的HDL了hhh（其实HDL也非常有意思。）。project6写这个hack machine code的assembler我觉得是一个承上启下的unit，所以从这里归纳一下往下的hardware和开始之后的top layer，之后的software hierarchy对大多数人其实是更有用的，所以之后的每个project都会记录一下。</p>
+
+<p>github：<a href="https://github.com/Lunaticf/nand2teris">https://github.com/Lunaticf/nand2teris</a></p>
+
+<h4 id="1-what-is-nand2teris-and-the-part1">1. what is nand2teris and the part1</h4>
+
+<p>nand2teris官网： <a href="https://www.nand2tetris.org">https://www.nand2tetris.org</a></p>
+
+<p>nand2teris是一门教你from the ground up从一个nand逻辑门开始造一台计算机的课程，分为硬件和软件两个part。Cousera上学起来比较方便，但是project和其他资源完全开放，不看视频完全没问题，甚至可以节省相当多的时间，干货都在pdf和project。并且这门课对初学者非常友好，甚至不要求你有编程经验，在project6写汇编器的时候甚至提供了非编程的版本，让你手动翻译程序到binary code也可以过（虽然我觉得这样也太蠢了&hellip;.）。这门课另一个好处在于模块划分非常清晰和独立，循序渐进，并且打造了相当好的多个可视化工具，帮助你理解和实践。并且整个HDL硬件编程语言和CPU的指令集都是重新设计的简化版，非常友好，可以想象投入了非常大的精力，自然这门课也是好评如潮，两个老师也很萌，每个week最后的perspective最爱看了。</p>
+
+<p><img src="/images/nand2.png" alt="" />
+part1的各个项目：</p>
+
+<ul>
+<li>Boolean Logic 用与非门设计And，Or，Not，Multiplexor等基本逻辑门</li>
+<li>Boolean Arithmetic 设计半加器、全加器和ALU等</li>
+<li>Sequential Logic 以上都是combinational的chip，不能维护状态，构建寄存器和RAM</li>
+<li>Machine Language 用汇编先写一点程序</li>
+<li>Computer Architecture 设计CPU，这里用的是程序和数据分离的哈佛架构</li>
+<li>Assembler 将汇编程序转化为binary code</li>
+</ul>
+
+<p>我在完成part1的各个project的过程中感受就是学到了如何从一个简单的逻辑门一步一步搭建到各个模块，体会用基础的逻辑门实现多路复用等逻辑，再从各个小的模块构建到更大的模块比如ALU，RAM，非常深的体会了Abstract这一计算机科学的核心，在实现high level的chip的时候用到小的chip，完全不用care里面的细节，只需要focus其输入输出。另外就是重温了一下硬件编程，刚上手的时候就想起来本科的时候数电的时候曾经写过的verilog，并且立即就想起了怎么用真值表来构造表达式，算出这个chip所需要的逻辑门组合，然后自然而然就过渡到化简更方便的卡诺图等，当然也要感谢这门课设计的精简的hdl，让我忘记了被verilog支配的恐惧。另外一个很深的感触就是<strong>学过的知识确实是有用的，在你的mind里其实会建立索引，可能索引指向的数据会忘掉，但是可以让你日后有这种deja vu（似曾相识的）的感觉，马上就能按图索骥拾起来。</strong></p>
+
+<p>我觉得每个CS的新生都可以学一下这门课，建立起down to top的对计算机体系的整体的感性认识，这样之后再去学数电、操作系统和编译原理等专业课的时候会有一定的帮助，研究各个系统的detail。</p>
+
+<h4 id="2-the-hack-assembler">2. the hack assembler</h4>
+
+<p>在完成了part1之后，我们就可以过渡到software hierarchy啦~看到图中下面已经变成一个Hack chip了，这意味着我们已经完成对Hardware一整层的Abstract了，只需要把它当成一个能运行Binary code的computer。</p>
+
+<p><img src="/images/nand1.png" alt="" /></p>
+
+<p>用Java快速写了一个很laji的版本，<a href="https://github.com/Lunaticf/nand2teris">https://github.com/Lunaticf/nand2teris</a>
+需要注意的是这里Project只要求翻译正确的汇编程序，也就是提供的需要转换的汇编程序语法上是正确的，也降低了一定的难度，毕竟不是Compiler的课程。
+实现的核心就是根据Binary code的<a href="https://docs.wixstatic.com/ugd/44046b_89a8e226476741a3b7c5204575b8a0b2.pdf">规范</a>来将汇编程序.asm转换为.hack二进制代码。，指令集也是非常简单的，照着提供的大致流程写就行了。主要有Parser和Generator两个核心类，Parser用于返回每一个有效line，在调用hasNext的时候跳过空行与注释，同时也要对语句进行trim和判断是否有行尾注释。主类调用Parser返回每一行有效的汇编语句后，调用Genertor生成bianry code，指令集很简单，只有A指令和C指令两种指令，转译即可。另外就是SymbolTable的概念，汇编语言自然需要定义自己的symbol来更方便的编程，那么我们需要定义一个SymbolTable，这里我直接用Java的HashMap来实现，首先预定义一些symbol比如Screen、Keyboard这些键，值就是其内存起始地址。我们的汇编器需要对程序进行两遍的扫描，first pass来扫诸如(xxx)这样的label，主要是因为这类label可能会出现在定义其label的语句之前就被调用，我们没有办法扫描的时候就给出symbol的value，所以需要two pass。</p>
+
+<p><img src="/images/hack1.png" alt="" /></p>
+
+<p>初学者需要注意一些细节，比如在A指令定义一个新的symbol的时候，是从内存的16开始存放，你可能会觉得那程序中如果用到过@16、@17的语句，那么不是重复使用这一个Byte了么，其实这里也还是简化了，在论坛中发现助教回答诸如以下@常量的语句后面跟的都是：</p>
+
+<pre><code>@18
+D=A
+</code></pre>
+
+<p>这些数字不用做内存地址的reference，而是只是用来赋值常量的。
+另外就是在first pass的时候统计行号的时候注意不要统计label这一行。</p>
+
+<p>单独写一个很快速的版本过test是比较简单的，py写的话可以不到100行，其实还有很多可以完善的点，比如检测语法错误、重复的label、D+A可以写成A+D等等，使其更加robust，还可以用js直接写一个网页的可视化版本，但是完成课程要求的已经足够理解基本原理了，Keep moving!</p>
+
+                </section>
+            </article>
+
+            
+
+            
+                <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'https-lunaticf-github-io'; 
+
+     
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+            
+
+            
+
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.github.com/Lunaticf">
+        <i class="fa fa-github-square"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+       © Copyright 2019 <i class="fa fa-heart" aria-hidden="true"></i> Lunaticf
+    
+    </p>
+    <p class="small">
+        Powered by <a href="http://www.gohugo.io/">Hugo</a> Theme By <a href="https://github.com/nodejh/hugo-theme-cactus-plus">nodejh</a>
+    </p>
+</footer>
+
+        </section>
+
+        <script src="https://lunaticf.github.io/js/jquery-3.3.1.min.js"></script>
+<script src="https://lunaticf.github.io/js/main.js"></script>
+<script src="https://lunaticf.github.io/js/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'your_google_analytics_id', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+
+
+
+    </body>
+</html>

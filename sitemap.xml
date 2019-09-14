@@ -4,25 +4,60 @@
   
   <url>
     <loc>https://lunaticf.github.io/categories/</loc>
-    <lastmod>2019-07-18T21:24:15+08:00</lastmod>
+    <lastmod>2019-09-13T21:38:41+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://lunaticf.github.io/posts/hackassembler/</loc>
+    <lastmod>2019-09-13T21:38:41+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://lunaticf.github.io/posts/</loc>
+    <lastmod>2019-09-13T21:38:41+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://lunaticf.github.io/tags/</loc>
+    <lastmod>2019-09-13T21:38:41+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://lunaticf.github.io/categories/compiler/</loc>
+    <lastmod>2019-09-13T21:38:41+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://lunaticf.github.io/categories/coursera/</loc>
+    <lastmod>2019-09-13T21:38:41+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://lunaticf.github.io/categories/foundation/</loc>
+    <lastmod>2019-09-13T21:38:41+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://lunaticf.github.io/tags/nand2teris/</loc>
+    <lastmod>2019-09-13T21:38:41+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://lunaticf.github.io/</loc>
+    <lastmod>2019-09-13T21:38:41+08:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
     <loc>https://lunaticf.github.io/posts/hello/</loc>
     <lastmod>2019-07-18T21:24:15+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://lunaticf.github.io/posts/</loc>
-    <lastmod>2019-07-18T21:24:15+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://lunaticf.github.io/tags/</loc>
-    <lastmod>2019-07-18T21:24:15+08:00</lastmod>
-    <priority>0</priority>
   </url>
   
   <url>
@@ -33,12 +68,6 @@
   
   <url>
     <loc>https://lunaticf.github.io/categories/life/</loc>
-    <lastmod>2019-07-18T21:24:15+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://lunaticf.github.io/</loc>
     <lastmod>2019-07-18T21:24:15+08:00</lastmod>
     <priority>0</priority>
   </url>
