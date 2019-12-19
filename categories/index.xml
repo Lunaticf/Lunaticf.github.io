@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>添忧杂货铺</title>
+    <title>Categories on 添忧杂货铺</title>
     <link>https://lunaticf.github.io/categories/</link>
-    <description>Recent content on 添忧杂货铺</description>
+    <description>Recent content in Categories on 添忧杂货铺</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Thu, 19 Dec 2019 18:19:58 +0800</lastBuildDate>
@@ -12,21 +12,66 @@
     
     
     <item>
-      <title>面向切面编程AOP</title>
-      <link>https://lunaticf.github.io/posts/aspect-oriented-programming/</link>
+      <title></title>
+      <link>https://lunaticf.github.io/categories/</link>
       <pubDate>Thu, 19 Dec 2019 18:19:58 +0800</pubDate>
       
-      <guid>https://lunaticf.github.io/posts/aspect-oriented-programming/</guid>
-      <description>面向切面编程 目前编程范式主要有以下几种： 面向过程编程 面向对象编程 函数式编程 事件驱动编程 面向切面编程 &amp;hellip; 但是面向切面编程相对来说只是OOP的一种</description>
+      <guid>https://lunaticf.github.io/categories/</guid>
+      <description></description>
     </item>
     
     <item>
-      <title>Go语言编程 Notes</title>
-      <link>https://lunaticf.github.io/posts/go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-notes/</link>
-      <pubDate>Mon, 02 Dec 2019 21:40:34 +0800</pubDate>
+      <title>Distributed System</title>
+      <link>https://lunaticf.github.io/categories/distributed-system/</link>
+      <pubDate>Wed, 18 Dec 2019 19:20:50 +0800</pubDate>
       
-      <guid>https://lunaticf.github.io/posts/go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-notes/</guid>
-      <description>Go语言编程读书笔记 个人还是比较喜欢这种类型的书的，讲很多背景历史和延伸，与其他语言进行比较，读起来很有意思，而不是只是罗列语言的语法。 wh</description>
+      <guid>https://lunaticf.github.io/categories/distributed-system/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>consensus</title>
+      <link>https://lunaticf.github.io/categories/consensus/</link>
+      <pubDate>Tue, 17 Dec 2019 20:20:31 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/categories/consensus/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Java</title>
+      <link>https://lunaticf.github.io/categories/java/</link>
+      <pubDate>Sun, 15 Dec 2019 13:15:47 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/categories/java/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>compiler</title>
+      <link>https://lunaticf.github.io/categories/compiler/</link>
+      <pubDate>Fri, 13 Sep 2019 21:38:41 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/categories/compiler/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>coursera</title>
+      <link>https://lunaticf.github.io/categories/coursera/</link>
+      <pubDate>Fri, 13 Sep 2019 21:38:41 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/categories/coursera/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>foundation</title>
+      <link>https://lunaticf.github.io/categories/foundation/</link>
+      <pubDate>Fri, 13 Sep 2019 21:38:41 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/categories/foundation/</guid>
+      <description></description>
     </item>
     
   </channel>

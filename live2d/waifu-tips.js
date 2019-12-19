@@ -142,8 +142,10 @@ function loadWidget(waifuPath, apiPath) {
 	}
 
 	function initModel() {
-		var modelId = localStorage.getItem("modelId"),
-			modelTexturesId = localStorage.getItem("modelTexturesId");
+		// var modelId = localStorage.getItem("modelId"),
+		// 	modelTexturesId = localStorage.getItem("modelTexturesId");
+		var modelId = 1;
+		var modelTexturesId = 1;
 		if (modelId == null) {
 			//首次访问加载 指定模型 的 指定材质
 			var modelId = 1, //模型 ID
