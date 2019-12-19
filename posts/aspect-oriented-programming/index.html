@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		 
+			
+  
+    <meta name="twitter:card" content="summary"/>
+    
+      <meta name="twitter:image" content="https://lunaticf.github.io/images/avatar.png" />
+    
+  
+  
+  <meta name="twitter:title" content="面向切面编程AOP"/>
+  <meta name="twitter:description" content="面向切面编程 目前编程范式主要有以下几种： 面向过程编程 面向对象编程 函数式编程 事件驱动编程 面向切面编程 &hellip; 但是面向切面编程相对来说只是OOP的一种"/>
+  
+  
+  
+  
+    <meta name="twitter:creator" content="@Lunaticf"/>
+  
+
+
+
+		
+		<meta name="author" content="Lunaticf">
+		<meta name="description" content="添忧杂货铺">
+		<meta name="generator" content="Hugo 0.55.6" />
+		<title>面向切面编程AOP &middot; 添忧杂货铺</title>
+		<link rel="shortcut icon" href="https://lunaticf.github.io/images/favicon.ico">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/style.css">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/highlight.css">
+
+		
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/font-awesome.min.css">
+		
+
+		
+		<link href="https://lunaticf.github.io/index.xml" rel="alternate" type="application/rss+xml" title="添忧杂货铺" />
+		
+
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='https://lunaticf.github.io/'> <span class="arrow">←</span>Home</a>
+	
+	<a href='https://lunaticf.github.io/posts'>Archive</a>
+	<a href='https://lunaticf.github.io/tags'>Tags</a>
+	<a href='https://lunaticf.github.io/about'>About</a>
+
+	
+</nav>
+
+
+        <section id="wrapper" class="post">
+            <article>
+                <header>
+                    <h1>
+                        面向切面编程AOP
+                    </h1>
+                    <h2 class="headline">
+                    Dec 19, 2019 18:19
+                    · 1608 words
+                    · 4 minute read
+                      <span class="tags">
+                      
+                      
+                          
+                              <a href="https://lunaticf.github.io/tags/"></a>
+                          
+                      
+                      
+                      </span>
+                    </h2>
+                </header>
+                
+                <section id="post-body">
+                    
+
+<h2 id="面向切面编程">面向切面编程</h2>
+
+<p>目前编程范式主要有以下几种：</p>
+
+<ul>
+<li>面向过程编程</li>
+<li>面向对象编程</li>
+<li>函数式编程</li>
+<li>事件驱动编程</li>
+<li>面向切面编程</li>
+<li>&hellip;</li>
+</ul>
+
+<p>但是面向切面编程相对来说只是OOP的一种补充，是一种编程概念。</p>
+
+<p>AOP的初衷是DRY，Don&rsquo;t repeat yourself，把非功能性的需求剥离出来统一管理，侵入性小，增强代码的可读性和可维护性。
+比如权限控制、缓存控制、事务控制、异常处理、日志和性能监控等都可以交给AOP去做。Python中的装饰器就和AOP是类似的思想。</p>
+
+<h3 id="spring-aop">Spring-AOP</h3>
+
+<p>可以用XML也可以用注解的方式来配置：</p>
+
+<ul>
+<li>切面作用于哪里</li>
+<li>切面的内容</li>
+</ul>
+
+<pre><code class="language-java">@Aspect
+@Component
+public class SecurityAspect {
+    @Autowired
+    private AuthService authService;
+
+    @Pointcut(&quot;@annotation(AdminOnly)&quot;)
+    public void adminOnly() {
+        
+    }
+
+    @Before(&quot;adminOnly()&quot;)
+    public void checkAccess() {
+        authService.checkAccess();
+    }
+}
+</code></pre>
+
+<h4 id="切面表达式">切面表达式</h4>
+
+<p>描述匹配哪些方法的表达式，就像正则表达式一样。
+匹配注解、对象、方法、类等。一般匹配方法，使用execution可以灵活组合筛选。</p>
+
+<pre><code class="language-java">// 匹配一个类的所有方法
+@Pointcut(&quot;within(com.mall.service.ProductService&quot;)
+public void matchType() {}
+
+// 匹配一个包下的类的所有方法 不包括子包 子包使用..*
+@Pointcut(&quot;within(com.mall.service.*&quot;)
+public void matchPackage() {}
+
+// 匹配某些参数的方法
+@Pointcut(&quot;args(Long,String)&quot;)
+public void matchArgs(){}
+</code></pre>
+
+<p>还有很多就不一一演示，总之就是筛选出哪些方法我们想要拦截。</p>
+
+<p>Advice五种注解，帮助我们在拦截方法的各个时机进行操作：</p>
+
+<ul>
+<li>@Before</li>
+<li>@After<br /></li>
+<li>@AfterReturning 成功执行之后 对方法返回值处理</li>
+<li>@AfterThrowing 抛出异常之后</li>
+<li>@Around 环绕通知 比较强大 可以组合前几种</li>
+</ul>
+
+<h3 id="实现原理">实现原理</h3>
+
+<h4 id="织入的时机">织入的时机</h4>
+
+<ol>
+<li>编译器 (AspectJ)</li>
+<li>类加载时 (AspectJ 5+)</li>
+<li>运行时 (Spring AOP)</li>
+</ol>
+
+<h4 id="代理模式">代理模式</h4>
+
+<p><a href="https://imgchr.com/i/QqLTtU"><img src="https://s2.ax1x.com/2019/12/19/QqLTtU.md.png" alt="QqLTtU.md.png" /></a>
+代理模式就是一种实现AOP的方法，客户端通过接口引用目标对象或者代理对象，代理对象和目标对象都要实现该接口，目标对象的方法代理对象都要有。那么代理对象就可以在真正调用对象的前后做一些事情。
+那么我们直接实现一个代理模式就叫静态代理，静态代理的缺点就是依然存在重复，会有巨多代理类。</p>
+
+<p>那么动态代理就可以解决这个问题，主要有两类：</p>
+
+<ul>
+<li>基于接口的代理 JDK代理</li>
+<li>基于继承的代理 Cglib代理</li>
+</ul>
+
+<p>其实动态代理就是帮我们自动生成这些代理类的字节码。</p>
+
+<h4 id="jdk动态代理">jdk动态代理</h4>
+
+<p>真正对象：</p>
+
+<pre><code class="language-java">public class RealSubject implements Subject{
+    @Override
+    public void request() {
+        System.out.println(&quot;real subject execute request&quot;);
+    }
+}
+</code></pre>
+
+<p>动态代理类代码，需要实现InvocationHandler接口：</p>
+
+<pre><code class="language-java">public class JdkProxySubject implements InvocationHandler{
+
+    private RealSubject realSubject;
+
+    public JdkProxySubject(RealSubject realSubject) {
+        this.realSubject = realSubject;
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        // 代理操作
+        System.out.println(&quot;before&quot;);
+        Object result = null;
+        try{
+            // 反射调用该代理对象的方法
+            result = method.invoke(realSubject,args);
+        }catch (Exception e){
+            System.out.println(&quot;ex:&quot;+e.getMessage());
+            // 不应改变代理类行为 异常应该重新抛出来
+            throw e;
+        }finally {
+            // 代理操作
+            System.out.println(&quot;after&quot;);
+        }
+        return result;
+    }
+}
+
+public static void main(String[] args){
+    // 能够把动态生成的代理对象的字节码保存下来
+    System.getProperties().put(&quot;sun.misc.ProxyGenerator.saveGeneratedFiles&quot;, &quot;true&quot;);
+    Subject subject = (Subject) Proxy.newProxyInstance(Client.class.getClassLoader(),new Class[]{Subject.class},new JdkProxySubject(new RealSubject()));
+    subject.request();
+}
+</code></pre>
+
+<p>如果我们对被代理对象做改动，新增一个方法hello，可以看到JDK动态代理无需再改动别的代码。
+那么如果使用静态代理，我们就要对静态代理类也进行修改新增hello。</p>
+
+<h4 id="cglib动态代理">Cglib动态代理</h4>
+
+<p>拦截器：</p>
+
+<pre><code class="language-java">public class DemoMethodInterceptor implements MethodInterceptor{
+    @Override
+    public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+        System.out.println(&quot;before in cglib&quot;);
+        Object result = null;
+        try{
+            result = proxy.invokeSuper(obj, args);
+        }catch (Exception e){
+            System.out.println(&quot;get ex:&quot;+e.getMessage());
+            throw e;
+        }finally {
+            System.out.println(&quot;after in cglib&quot;);
+        }
+        return result;
+    }
+}
+
+// 客户端
+public static void main(String[] args){
+    Enhancer enhancer = new Enhancer();
+    enhancer.setSuperclass(RealSubject.class);
+    enhancer.setCallback(new DemoMethodInterceptor());
+    Subject subject = (Subject) enhancer.create();
+    subject.hello();
+}
+</code></pre>
+
+<p>可以看到其实是大同小异，但是Cglib直接动态生成一个子类，不需要基于接口来实现动态代理。
+所以代理的类不能是final的，不然就不能继承该类了。同理，被代理的类也必须有无参构造。</p>
+
+<h4 id="jdk动态代理与cglib动态代理对比">JDK动态代理与Cglib动态代理对比</h4>
+
+<ul>
+<li>JDK只能针对有接口的类的接口方法进行动态代理</li>
+<li>Cglib基于继承实现代理，无法对static类、final类、static方法、final方法进行代理</li>
+</ul>
+
+<h3 id="spring对两种实现的选择">Spring对两种实现的选择</h3>
+
+<ul>
+<li>如果目标对象实现了接口，则默认采用JDK动态代理</li>
+<li>如果目标对象没有实现接口，则采用Cglib代理</li>
+<li>如果目标对象实现了接口，也可以强制使用Cglib代理</li>
+</ul>
+
+<h3 id="aop如何链式调用">AOP如何链式调用</h3>
+
+<p>责任链模式，客户端只需要调用头一个，后面的自动链式调用。</p>
+
+<pre><code class="language-java">public abstract class Handler {
+
+    private Handler sucessor;
+
+    public Handler getSucessor() {
+        return sucessor;
+    }
+
+    public void setSucessor(Handler sucessor) {
+        this.sucessor = sucessor;
+    }
+
+    public void execute(){
+        handleProcess();
+
+        // 如果有后继 交给后继执行
+        if(sucessor != null){
+            sucessor.execute();
+        }
+    }
+
+    protected abstract void handleProcess();
+}
+</code></pre>
+
+<p>这种方法还是需要客户端自己把各个对象链起来，并且每个对象之间是相互依赖的，耦合很紧。更好的方式是再包一层Chain，让Chain像迭代器一样维护索引，
+客户端不断调用exec执行链上的对象，make progress。
+Spring就是这样用Chain实现AOP的链式调用，感兴趣的可以继续深入Spring源码学习。</p>
+
+                </section>
+            </article>
+
+            
+
+            
+                <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'https-lunaticf-github-io'; 
+
+     
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+            
+
+            
+
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.github.com/Lunaticf">
+        <i class="fa fa-github-square"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+       © Copyright 2019 <i class="fa fa-heart" aria-hidden="true"></i> Lunaticf
+    
+    </p>
+    <script src="https://lunaticf.github.io/live2d/autoload.js"></script>
+</footer>
+
+        </section>
+
+        <script src="https://lunaticf.github.io/js/jquery-3.3.1.min.js"></script>
+<script src="https://lunaticf.github.io/js/main.js"></script>
+<script src="https://lunaticf.github.io/js/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'your_google_analytics_id', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+
+
+
+    </body>
+</html>

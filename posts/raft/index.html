@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		 
+			
+  
+    <meta name="twitter:card" content="summary"/>
+    
+      <meta name="twitter:image" content="https://lunaticf.github.io/images/avatar.png" />
+    
+  
+  
+  <meta name="twitter:title" content="Raft"/>
+  <meta name="twitter:description" content="Abstract Raft是管理replicated log的一种共识算法，Raft比Paxos更加简单好理解。 Introduction 共识算法能够让多个机器在某些failure的"/>
+  
+  
+  
+  
+    <meta name="twitter:creator" content="@Lunaticf"/>
+  
+
+
+
+		
+		<meta name="author" content="Lunaticf">
+		<meta name="description" content="添忧杂货铺">
+		<meta name="generator" content="Hugo 0.55.6" />
+		<title>Raft &middot; 添忧杂货铺</title>
+		<link rel="shortcut icon" href="https://lunaticf.github.io/images/favicon.ico">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/style.css">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/highlight.css">
+
+		
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/font-awesome.min.css">
+		
+
+		
+		<link href="https://lunaticf.github.io/index.xml" rel="alternate" type="application/rss+xml" title="添忧杂货铺" />
+		
+
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='https://lunaticf.github.io/'> <span class="arrow">←</span>Home</a>
+	
+	<a href='https://lunaticf.github.io/posts'>Archive</a>
+	<a href='https://lunaticf.github.io/tags'>Tags</a>
+	<a href='https://lunaticf.github.io/about'>About</a>
+
+	
+</nav>
+
+
+        <section id="wrapper" class="post">
+            <article>
+                <header>
+                    <h1>
+                        Raft
+                    </h1>
+                    <h2 class="headline">
+                    Dec 17, 2019 20:20
+                    · 1382 words
+                    · 3 minute read
+                      <span class="tags">
+                      
+                      
+                          
+                              <a href="https://lunaticf.github.io/tags/consensus">consensus</a>
+                          
+                      
+                      
+                      </span>
+                    </h2>
+                </header>
+                
+                <section id="post-body">
+                    
+
+<h3 id="abstract">Abstract</h3>
+
+<p>Raft是管理replicated log的一种共识算法，Raft比Paxos更加简单好理解。</p>
+
+<h3 id="introduction">Introduction</h3>
+
+<p>共识算法能够让多个机器在某些failure的情况下依然能一致的工作，
+共识在如今的大规模分布式软件系统中发挥着巨大的作用。
+过去Paxos统治着共识算法，也成为教授共识算法的不二选择。</p>
+
+<p>不幸的是，Paxos太难理解啦！所有人都在和Paxos痛苦的抗争。</p>
+
+<p>本文设计了一种新的共识算法，能够作为系统设计和教育的更好的基石。简而言之，我们希望我们的算法更加简单，
+更好理解。不仅是能work，而是更好的理解why it works。</p>
+
+<p>本文的贡献就是Raft，我们运用了特别的技巧来使得它更容易理解，我们特意解耦了Leader选举、日志复制和safety，并且压缩了State space。Raft减少了系统的不确定性。在试验中学生明显更好接受Raft。</p>
+
+<p>Raft和已经存在的共识算法很相似，但是有一些新的特点。</p>
+
+<ul>
+<li>Strong leader
+Raft依赖于一个强有力的领导，log仅从Leader流向其他服务器，这简化了Raft。</li>
+<li>Leader选举
+Raft使用随机的计时器来选举，仅仅需稍微改动心跳机制即可。</li>
+<li>Membership changes
+Raft使用一个新的共识方法，配置改变的时候还可以正常work。</li>
+</ul>
+
+<p>本文相信Raft超越了其他的共识算法，它更简单并且更好理解。
+并且有很多开源的实现，安全性也从理论上被证明了，并且更加高效。</p>
+
+<h3 id="replicated-state-machines">Replicated state machines</h3>
+
+<p>共识算法源于复制状态机的场景，主要用来解决分布式系统中的容错问题。
+比如大规模的分布式系统，which have a single cluster leader，比如GFS，HDFS。</p>
+
+<p><a href="https://imgchr.com/i/QozdC4"><img src="https://s2.ax1x.com/2019/12/17/QozdC4.md.png" alt="QozdC4.md.png" /></a>
+复制状态机通常使用replicated log来实现，如图1。每个服务器存储包含操作序列的log，将会按照顺序执行。
+每个状态机保证执行相同的序列，因为状态机是deterministic，都会转移到相同的状态。</p>
+
+<p>使得replicated log一致，就是共识算法的任务。
+共识模块收到客户端的command，并且加到log，他需要和其他服务器的共识模块进行沟通，
+以确保log的顺序一致，即使一些server fail。一旦command被正确的replicated了，
+那么每个服务器就可以执行该command，客户端收到执行结果。</p>
+
+<p>那么实际系统的共识通常有以下属性：</p>
+
+<ul>
+<li>在非拜占庭的环境下确保安全(指的是不会返回一个大家不一致的结果)，包括网络延迟、分区、丢包等。</li>
+<li>只要大多数服务器正常工作，那么整个系统就是work的。因此，通常一个五个节点的集群可以容忍2个节点的fail。</li>
+<li>不依赖于时间来保证一致性。</li>
+</ul>
+
+<h3 id="what-s-wrong-with-paxos">What’s wrong with Paxos?</h3>
+
+<p>过去十年，Lamport大佬的Paxos几乎变成了共识的同义词。</p>
+
+<p>问题是Paxos有两个缺点</p>
+
+<ol>
+<li>太难理解，即使是研究者也很难搞定</li>
+<li>很难在工程上实现</li>
+</ol>
+
+<p>实际上每个一开始想实现Paxos的系统，最后都变的很不一样了，因为太多细节要考虑。
+&gt; There are significant gaps between the description of the Paxos algorithm and the needs of a real-world system&hellip; . the final system will be based on an unproven protocol</p>
+
+<p>所以Raft出现了。</p>
+
+<h3 id="designing-for-understandability">Designing for understandability</h3>
+
+<p>我们设计Raft有很多目标，比如工程友好，必须安全和高效。
+但是最困难的还是让他容易理解，为此我们做了如下的努力：</p>
+
+<ul>
+<li><p>解构 无论可能不可能 我们尽量划分成可以独立理解的组件</p>
+
+<ul>
+<li>leader election</li>
+<li>log replication</li>
+<li>safety</li>
+<li>membership changes</li>
+</ul></li>
+
+<li><p>压缩状态空间
+尽管大多数时候我们想增加确定性，但是有时候不确定能够压缩状态空间。“choose any; it doesn’t matter” 因为在这个random下，任意状态都是没关系的，就减少了复杂度。</p></li>
+</ul>
+
+<h3 id="the-raft-consensus-algorithm">The Raft consensus algorithm</h3>
+
+                </section>
+            </article>
+
+            
+
+            
+                <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'https-lunaticf-github-io'; 
+
+     
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+            
+
+            
+
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.github.com/Lunaticf">
+        <i class="fa fa-github-square"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+       © Copyright 2019 <i class="fa fa-heart" aria-hidden="true"></i> Lunaticf
+    
+    </p>
+    <script src="https://lunaticf.github.io/live2d/autoload.js"></script>
+</footer>
+
+        </section>
+
+        <script src="https://lunaticf.github.io/js/jquery-3.3.1.min.js"></script>
+<script src="https://lunaticf.github.io/js/main.js"></script>
+<script src="https://lunaticf.github.io/js/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'your_google_analytics_id', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+
+
+
+    </body>
+</html>

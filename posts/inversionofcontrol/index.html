@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		 
+			
+  
+    <meta name="twitter:card" content="summary"/>
+    
+      <meta name="twitter:image" content="https://lunaticf.github.io/images/avatar.png" />
+    
+  
+  
+  <meta name="twitter:title" content="Inversion of Control 控制反转"/>
+  <meta name="twitter:description" content="IoC(Inversion of Control) 学习一个东西，我会首先了解该事物的定义和原理，再自己简单实现一个， 最后学习开源框架的经典实现，个人觉得是不错的方式。 所以本文也分为对应"/>
+  
+  
+  
+  
+    <meta name="twitter:creator" content="@Lunaticf"/>
+  
+
+
+
+		
+		<meta name="author" content="Lunaticf">
+		<meta name="description" content="添忧杂货铺">
+		<meta name="generator" content="Hugo 0.55.6" />
+		<title>Inversion of Control 控制反转 &middot; 添忧杂货铺</title>
+		<link rel="shortcut icon" href="https://lunaticf.github.io/images/favicon.ico">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/style.css">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/highlight.css">
+
+		
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/font-awesome.min.css">
+		
+
+		
+		<link href="https://lunaticf.github.io/index.xml" rel="alternate" type="application/rss+xml" title="添忧杂货铺" />
+		
+
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='https://lunaticf.github.io/'> <span class="arrow">←</span>Home</a>
+	
+	<a href='https://lunaticf.github.io/posts'>Archive</a>
+	<a href='https://lunaticf.github.io/tags'>Tags</a>
+	<a href='https://lunaticf.github.io/about'>About</a>
+
+	
+</nav>
+
+
+        <section id="wrapper" class="post">
+            <article>
+                <header>
+                    <h1>
+                        Inversion of Control 控制反转
+                    </h1>
+                    <h2 class="headline">
+                    Dec 15, 2019 13:15
+                    · 1405 words
+                    · 3 minute read
+                      <span class="tags">
+                      
+                      
+                          
+                              <a href="https://lunaticf.github.io/tags/spring">Spring</a>
+                          
+                              <a href="https://lunaticf.github.io/tags/ioc">IOC</a>
+                          
+                      
+                      
+                      </span>
+                    </h2>
+                </header>
+                
+                <section id="post-body">
+                    
+
+<h3 id="ioc-inversion-of-control">IoC(Inversion of Control)</h3>
+
+<p>学习一个东西，我会首先了解该事物的定义和原理，再自己简单实现一个，
+最后学习开源框架的经典实现，个人觉得是不错的方式。
+所以本文也分为对应的三个部分。</p>
+
+<h4 id="什么是ioc">什么是IOC</h4>
+
+<p>IoC是Inversion of Control的缩写，翻译过来叫控制反转。IoC是一种抽象的设计思想，依赖注入(DI)是实现其的一种具体技术，二者的关系就像类和实例一样，DI是2004年大佬Martin Fowler提出的，具体定义了一种概念，就死被注入对象依赖于IoC容器配置这样的名字就有点晦涩&hellip;但是还是可以理解的。</p>
+
+<p>这里的控制指的是本来对于控制权在我们自己手里，比如我们要初始化一个对象的时候，我们自己对这个对象所包含的若干引用初始化，比如在构造函数里new若干个引用的具体对象。也就是说是我们写的程序具有控制权。</p>
+
+<p>而反转就是控制权反转啦，现在控制权交到了IoC容器的手里，IoC帮我们创建对象，我们需要的时候就问IoC要就行了，就像我们平时写Controller层的时候，只需要声明我们需要什么Service，IoC自然就帮我们注入了。</p>
+
+<p>那跟工厂模式有什么区别呢&hellip;我们前面说DI是IoC的一种实现方式，which也是Spring的实现方式。
+&gt; With dependency injection as the name implies the reference is injected or given to your code. With Factory pattern your code must request the reference so your code fetches the object.</p>
+
+<p>使用工厂模式的时候我们的还是相对显式的一个请求，而依赖注入是隐式的一个注入。
+另一个区别就是工厂模式相对能动态的创建一些对象，而依赖注入比较适合静态的dependency，这个也是比较好体会的。</p>
+
+<p>个人觉得这些概念实际上是相互交叉的，比如IOC我们就可以看作一个大工厂啊，所以很多资料也说不清楚。<strong>一万个读者有一万个哈姆雷特</strong>那么我觉得重点还是放在理解IOC控制反转的思想的好处就好了，IoC最大的好处当然是能够解耦，并且帮助我们的应用程序更加清晰明了。举一个不是很恰当的例子，乔布斯霸气的告诉我们需要什么，我们自己不知道自己需要什么hhh。这些设计很多都能在生活中找到映射&hellip;Don’t call me, I will call you.</p>
+
+<p>这里也推荐一个Stackoverflow的Highly active question，讲的就是Dependency Injection vs Factory Pattern。
+<a href="https://stackoverflow.com/questions/557742/dependency-injection-vs-factory-pattern/22384293#22384293">https://stackoverflow.com/questions/557742/dependency-injection-vs-factory-pattern/22384293#22384293</a></p>
+
+<h4 id="ioc简单实现">IOC简单实现</h4>
+
+<p>这里实现一个非常简易的IOC容器，主要是帮助我们了解基本的原理呢。
+我们想一下，为了实现我们平时在Spring中那样使用依赖注入的方式，我们需要做些什么。</p>
+
+<ol>
+<li><p>注解一个对象，注册到IOC容器中保存。</p></li>
+
+<li><p>在被注入的对象中声明依赖对象注解，自动注入。</p></li>
+</ol>
+
+<p>所以我们主要就是要实现保存对象和依赖注入的功能，Java反射机制这里就不过多介绍啦~</p>
+
+<pre><code class="language-java">package lunaticf.simpleioc;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+
+public class Computer {
+    /**
+     * 品牌
+     */
+    private String brand;
+
+    /**
+     * 代表性能
+     */
+    private double performance;
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
+    }
+
+    public double getPerformance() {
+        return performance;
+    }
+
+    public void setPerformance(double performance) {
+        this.performance = performance;
+    }
+
+    @Override
+    public String toString() {
+        return &quot;Computer{&quot; +
+                &quot;brand='&quot; + brand + '\'' +
+                &quot;, performance=&quot; + performance +
+                '}';
+    }
+
+    /**
+     * 测试反射功能
+     * @param args
+     */
+    public static void main(String[] args) throws Exception{
+        // 通过类装载器获取Computer Class对象
+        ClassLoader systemClassLoader = ClassLoader.getSystemClassLoader();
+        Class&lt;?&gt; clazz = systemClassLoader.loadClass(&quot;lunaticf.simpleioc.Computer&quot;);
+
+        // 获取默认构造函数并初始化
+        Constructor&lt;?&gt; cons = clazz.getDeclaredConstructor();
+        Computer computer = (Computer) cons.newInstance();
+
+        // 通过反射得到方法，注入属性
+        Method setBrand = clazz.getMethod(&quot;setBrand&quot;, String.class);
+        setBrand.invoke(computer, &quot;apple&quot;);
+        Method setPerformance = clazz.getMethod(&quot;setPerformance&quot;, double.class);
+        setPerformance.invoke(computer, 22.5);
+
+        System.out.println(computer);
+    }
+}
+</code></pre>
+
+<p>上面是一个基本的反射例子，演示了我们通过反射来加载一个类，得到实例和初始化。
+那么如果把类的信息写在配置文件或者注解里，我们完全就可以通过读取配置信息或扫描注解，来在运行时获取到一个类的实例。</p>
+
+<p>参考代码：
+<a href="https://github.com/Lunaticf/Simple-IoC">https://github.com/Lunaticf/Simple-IoC</a></p>
+
+<h4 id="spring-ioc源码解析">Spring IOC源码解析</h4>
+
+<p>emmmm..不想让一篇blog太长啦，所以这个部分会在新的一篇里~</p>
+
+                </section>
+            </article>
+
+            
+
+            
+                <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'https-lunaticf-github-io'; 
+
+     
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+            
+
+            
+
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.github.com/Lunaticf">
+        <i class="fa fa-github-square"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+       © Copyright 2019 <i class="fa fa-heart" aria-hidden="true"></i> Lunaticf
+    
+    </p>
+    <script src="https://lunaticf.github.io/live2d/autoload.js"></script>
+</footer>
+
+        </section>
+
+        <script src="https://lunaticf.github.io/js/jquery-3.3.1.min.js"></script>
+<script src="https://lunaticf.github.io/js/main.js"></script>
+<script src="https://lunaticf.github.io/js/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'your_google_analytics_id', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+
+
+
+    </body>
+</html>

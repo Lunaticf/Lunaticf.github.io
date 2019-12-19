@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		 
+			
+  
+    <meta name="twitter:card" content="summary"/>
+    
+      <meta name="twitter:image" content="https://lunaticf.github.io/images/avatar.png" />
+    
+  
+  
+  <meta name="twitter:title" content="Distributed System Introduction"/>
+  <meta name="twitter:description" content="分布式系统入门 什么是一致性 CAP理论，一个分布式系统不能同时满足以下特性。 一致性 (Consistency) 可用性 (Availability) 分区容错性 (Partition tolerance) 一致性模型 弱一致性 最终一致性 DNS(Domain Name System) Gossip"/>
+  
+  
+  
+  
+    <meta name="twitter:creator" content="@Lunaticf"/>
+  
+
+
+
+		
+		<meta name="author" content="Lunaticf">
+		<meta name="description" content="添忧杂货铺">
+		<meta name="generator" content="Hugo 0.55.6" />
+		<title>Distributed System Introduction &middot; 添忧杂货铺</title>
+		<link rel="shortcut icon" href="https://lunaticf.github.io/images/favicon.ico">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/style.css">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/highlight.css">
+
+		
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/font-awesome.min.css">
+		
+
+		
+		<link href="https://lunaticf.github.io/index.xml" rel="alternate" type="application/rss+xml" title="添忧杂货铺" />
+		
+
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='https://lunaticf.github.io/'> <span class="arrow">←</span>Home</a>
+	
+	<a href='https://lunaticf.github.io/posts'>Archive</a>
+	<a href='https://lunaticf.github.io/tags'>Tags</a>
+	<a href='https://lunaticf.github.io/about'>About</a>
+
+	
+</nav>
+
+
+        <section id="wrapper" class="post">
+            <article>
+                <header>
+                    <h1>
+                        Distributed System Introduction
+                    </h1>
+                    <h2 class="headline">
+                    Dec 18, 2019 19:20
+                    · 1993 words
+                    · 4 minute read
+                      <span class="tags">
+                      
+                      
+                          
+                              <a href="https://lunaticf.github.io/tags/consensus">consensus</a>
+                          
+                              <a href="https://lunaticf.github.io/tags/distributed-system">Distributed System</a>
+                          
+                      
+                      
+                      </span>
+                    </h2>
+                </header>
+                
+                <section id="post-body">
+                    
+
+<h2 id="分布式系统入门">分布式系统入门</h2>
+
+<h3 id="什么是一致性">什么是一致性</h3>
+
+<p>CAP理论，一个分布式系统不能同时满足以下特性。</p>
+
+<ul>
+<li>一致性 (Consistency)</li>
+<li>可用性 (Availability)</li>
+<li>分区容错性 (Partition tolerance)</li>
+</ul>
+
+<h3 id="一致性模型">一致性模型</h3>
+
+<h4 id="弱一致性">弱一致性</h4>
+
+<ul>
+<li>最终一致性
+
+<ul>
+<li>DNS(Domain Name System)</li>
+<li>Gossip (Cassandra的通信协议)</li>
+</ul></li>
+</ul>
+
+<h4 id="强一致性">强一致性</h4>
+
+<ul>
+<li>同步</li>
+<li>Paxos</li>
+<li>Raft(multi-paxos)</li>
+<li>ZAB(multi-paxos)</li>
+</ul>
+
+<h3 id="问题">问题</h3>
+
+<p>数据不能单点存储，分布式系统通过日志的复制的形式实现state machine replication状态机复制，这种算法就是共识算法。但是系统最终一致性，不仅需要各个节点达成共识，还会取决于客户端的行为。</p>
+
+<h3 id="强一致性算法-主从同步">强一致性算法-主从同步</h3>
+
+<p>Master-slave</p>
+
+<ol>
+<li>Master接受写请求</li>
+<li>Master复制log到所有slave</li>
+<li>Master等待堵塞，直到所有slave返回响应</li>
+<li>Master告诉client成功或失败</li>
+</ol>
+
+<p>问题：虽然保证了强一致性，但是一个节点失败，Master阻塞，导致整个系统不可用。</p>
+
+<h3 id="强一致性算法-多数派">强一致性算法-多数派</h3>
+
+<p>基本思想就是少数服从多数。
+每次写保证写到大于N/2的节点，每次读保证从大于N/2个节点中去读。</p>
+
+<p>问题：
+并发环境下，无法保证系统正确性。比如两个log修改同一个值，在每个节点上执行的顺序不能保证一致，导致状态机不一致。</p>
+
+<h3 id="强一致性算法-paxos">强一致性算法-Paxos</h3>
+
+<p>Lamport大佬发明的，Lamport还是Latex的发明者。
+不禁让人想到Linus也同时还是git的发明者&hellip;大佬们总是一直改变世界，恐怖如斯。</p>
+
+<p>Lamport觉得故事更能让人接受，于是虚拟了一个叫做Paxos的希腊城邦。</p>
+
+<h4 id="basic-paxos">Basic Paxos</h4>
+
+<ul>
+<li>client 民众 请求发起者</li>
+<li>Proposer 接受Client 向cluster发起提案，就像人大代表帮老百姓提出提案</li>
+<li>Acceptor 接受提案，最终投票通过法案的关键人物 Quorum</li>
+<li>Learner 只是备份者 不参与共识算法</li>
+</ul>
+
+<p>Basic Paxos步骤：</p>
+
+<ol>
+<li>prepare
+proposer提出一个提案，编号为N，此N大于这个proposer之前提出的提案的编号。</li>
+<li>Promise
+如果N大于Acceptor之前接受的任何提案，则接受。这里Acceptor就只需要返回给proposer，彼此不需要知道结果。</li>
+<li>Accept
+如果达到了多数，proposer就会发出accept请求。</li>
+<li>Accepted
+如果acceptor在此期间没有收到任何编号大于N的提案，则接受提案内容。</li>
+</ol>
+
+<p><a href="https://imgchr.com/i/QH0v11"><img src="https://s2.ax1x.com/2019/12/18/QH0v11.md.png" alt="QH0v11.md.png" /></a></p>
+
+<p>潜在问题：
+活锁，acceptor之间发生冲突，
+不断生成新的编号想要讨论某一个提案，实质上系统没有make progress。
+可以通过随机的等待来解决。
+Basic Paxos还有一些问题，比如难实现，两轮RPC效率低等。</p>
+
+<h4 id="multi-paxos">Multi Paxos:</h4>
+
+<p>引入了Leader，唯一的proposer，所有请求都需要经过Leader。Basic Paxos冲突的原因就是有多个proposer，时间都花费在我们到底讨论哪个提案。</p>
+
+<p>现实中，各个节点会选取一个Leader，Client统一往这个Leader发请求，Leader保证一致性。</p>
+
+<h4 id="raft">Raft</h4>
+
+<p>比Multi Paxos还要简单的版本。
+日志复制划分为三个子问题：</p>
+
+<ul>
+<li>Leader选举</li>
+<li>Log同步</li>
+<li>Safety 保证正确性 一致性</li>
+</ul>
+
+<p>重新定义了角色：</p>
+
+<ul>
+<li>Leader(所有请求通过Leader)</li>
+<li>Follower</li>
+<li>Candidate (Leader宕机就会出现，是一个临时的角色)</li>
+</ul>
+
+<p>Raft还有个非常棒的动画演示！
+<a href="http://thesecretlivesofdata.com/raft/">http://thesecretlivesofdata.com/raft/</a></p>
+
+<h4 id="怎么保证safety">怎么保证safety</h4>
+
+<p>如果Follower发现没有Leader的心跳，就会变成Candidate，发送提议请求其他节点投票，一旦别的节点收到请求，自己的计时器就停止了，因为知道系统里面有人竞选了，自己没必要竞选。</p>
+
+<p>心跳不仅显示活着，还包含数据，一心二用，并且刷新Follower们的计时器，表示系统中有Leader。</p>
+
+<p>如果同时出现Candidate，平票的情况，节点会产生随机的timeout，比如有一个节点随机的短一点，他就会最终成为Leader。</p>
+
+<p>如果出现网络分区，(分布式系统中一般是单数节点，因为能保证出现分区的时候一般可以有一个大多数存在，保证有一个分区可用)。
+那么有一个分区是可用的。然后如果恢复后，就很好玩！那个不可用的分区就像世外桃源一样，不知有汉，无论魏晋。那么该分区的term(任期)会落后，分区恢复后不可用的分区就知道自己是落后了，就要同步可用分区的log。</p>
+
+<p>这些在动画中都有非常生动的演示。</p>
+
+<p><a href="https://www.google.com/search?q=raft+visulize&amp;oq=raft+visulize&amp;aqs=chrome..69i57j0l5j69i60l2.9286j0j4&amp;sourceid=chrome&amp;ie=UTF-8">https://www.google.com/search?q=raft+visulize&amp;oq=raft+visulize&amp;aqs=chrome..69i57j0l5j69i60l2.9286j0j4&amp;sourceid=chrome&amp;ie=UTF-8</a></p>
+
+<p>这里还有一个模拟器能够让我们模拟各种failure，看raft是怎么解决的。</p>
+
+<p>Raft有三种一致性结果：</p>
+
+<ul>
+<li>成功</li>
+<li>失败</li>
+<li>Timeout 比如只剩下两个节点，无法达成共识commit</li>
+</ul>
+
+<p>客户端需要一些逻辑应对timeout，自行处理一些failure的情况。</p>
+
+<p><a href="https://imgchr.com/i/QHUPKS"><img src="https://s2.ax1x.com/2019/12/18/QHUPKS.md.png" alt="QHUPKS.md.png" /></a></p>
+
+<h4 id="zab">ZAB</h4>
+
+<p>Zookeeper的共识算法，基本与Raft很像。ZAP把一个Leader的周期叫做epoch，而Raft叫做term。</p>
+
+<p>Raft保证日志连续性，Leader向follower发送心跳，而ZAB则相反。</p>
+
+<h3 id="总结">总结</h3>
+
+<p>分布式系统是一个很大的topic，一致性和状态机复制的共识算法是一个子集。这里只是简单介绍一下分布式系统的一致性和共识算法，在对一致性和共识算法有个基本的认识之后，就要多多读Paper和学习工业界的实现来深入宏大的分布式系统啦~
+感兴趣的可以实践一下两个主流的状态机复制实现：</p>
+
+<ul>
+<li>Zookeeper集群</li>
+<li>Etcd集群搭建和使用</li>
+</ul>
+
+<h3 id="参考">参考</h3>
+
+<p><a href="https://www.youtube.com/watch?v=BhosKsE8up8&amp;t=365s">https://www.youtube.com/watch?v=BhosKsE8up8&amp;t=365s</a></p>
+
+<p><a href="https://en.wikipedia.org/wiki/Paxos_(computer_science">https://en.wikipedia.org/wiki/Paxos_(computer_science</a>)</p>
+
+<p><a href="https://raft.github.io/">https://raft.github.io/</a></p>
+
+<p><a href="https://raft.github.io/raft.pdf">https://raft.github.io/raft.pdf</a></p>
+
+                </section>
+            </article>
+
+            
+
+            
+                <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'https-lunaticf-github-io'; 
+
+     
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+            
+
+            
+
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.github.com/Lunaticf">
+        <i class="fa fa-github-square"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+       © Copyright 2019 <i class="fa fa-heart" aria-hidden="true"></i> Lunaticf
+    
+    </p>
+    <script src="https://lunaticf.github.io/live2d/autoload.js"></script>
+</footer>
+
+        </section>
+
+        <script src="https://lunaticf.github.io/js/jquery-3.3.1.min.js"></script>
+<script src="https://lunaticf.github.io/js/main.js"></script>
+<script src="https://lunaticf.github.io/js/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'your_google_analytics_id', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+
+
+
+    </body>
+</html>

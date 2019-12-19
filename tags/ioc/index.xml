@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>IOC on 添忧杂货铺</title>
+    <link>https://lunaticf.github.io/tags/ioc/</link>
+    <description>Recent content in IOC on 添忧杂货铺</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Sun, 15 Dec 2019 13:15:47 +0800</lastBuildDate>
+    
+	<atom:link href="https://lunaticf.github.io/tags/ioc/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Inversion of Control 控制反转</title>
+      <link>https://lunaticf.github.io/posts/inversionofcontrol/</link>
+      <pubDate>Sun, 15 Dec 2019 13:15:47 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/posts/inversionofcontrol/</guid>
+      <description>IoC(Inversion of Control) 学习一个东西，我会首先了解该事物的定义和原理，再自己简单实现一个， 最后学习开源框架的经典实现，个人觉得是不错的方式。 所以本文也分为对应</description>
+    </item>
+    
+  </channel>
+</rss>

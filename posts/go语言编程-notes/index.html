@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		 
+			
+  
+    <meta name="twitter:card" content="summary"/>
+    
+      <meta name="twitter:image" content="https://lunaticf.github.io/images/avatar.png" />
+    
+  
+  
+  <meta name="twitter:title" content="Go语言编程 Notes"/>
+  <meta name="twitter:description" content="Go语言编程读书笔记 个人还是比较喜欢这种类型的书的，讲很多背景历史和延伸，与其他语言进行比较，读起来很有意思，而不是只是罗列语言的语法。 wh"/>
+  
+  
+  
+  
+    <meta name="twitter:creator" content="@Lunaticf"/>
+  
+
+
+
+		
+		<meta name="author" content="Lunaticf">
+		<meta name="description" content="添忧杂货铺">
+		<meta name="generator" content="Hugo 0.55.6" />
+		<title>Go语言编程 Notes &middot; 添忧杂货铺</title>
+		<link rel="shortcut icon" href="https://lunaticf.github.io/images/favicon.ico">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/style.css">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/highlight.css">
+
+		
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/font-awesome.min.css">
+		
+
+		
+		<link href="https://lunaticf.github.io/index.xml" rel="alternate" type="application/rss+xml" title="添忧杂货铺" />
+		
+
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='https://lunaticf.github.io/'> <span class="arrow">←</span>Home</a>
+	
+	<a href='https://lunaticf.github.io/posts'>Archive</a>
+	<a href='https://lunaticf.github.io/tags'>Tags</a>
+	<a href='https://lunaticf.github.io/about'>About</a>
+
+	
+</nav>
+
+
+        <section id="wrapper" class="post">
+            <article>
+                <header>
+                    <h1>
+                        Go语言编程 Notes
+                    </h1>
+                    <h2 class="headline">
+                    Dec 2, 2019 21:40
+                    · 633 words
+                    · 2 minute read
+                      <span class="tags">
+                      
+                      
+                          
+                              <a href="https://lunaticf.github.io/tags/"></a>
+                          
+                      
+                      
+                      </span>
+                    </h2>
+                </header>
+                
+                <section id="post-body">
+                    
+
+<h3 id="go语言编程读书笔记">Go语言编程读书笔记</h3>
+
+<p>个人还是比较喜欢这种类型的书的，讲很多背景历史和延伸，与其他语言进行比较，读起来很有意思，而不是只是罗列语言的语法。</p>
+
+<p>why读书笔记：</p>
+
+<ol>
+<li>提炼 把书读薄</li>
+<li>总结归纳 自己的思考</li>
+</ol>
+
+<h4 id="为什么我们需要一门新语言">为什么我们需要一门新语言</h4>
+
+<p>互联网时代的C语言</p>
+
+<ul>
+<li><p>并行和分布式支持</p>
+
+<p>事实上大多数语言标准库只提供了线程的支持</p>
+
+<ul>
+<li>Go func() 语言级别支持协程</li>
+<li>执行体的互斥同步 支持协程级的互斥同步</li>
+<li>执行体的消息传递 推荐使用消息而不是共享内存</li>
+</ul></li>
+
+<li><p>工程友好</p>
+
+<p>随着工程规模的不断扩大，协作成本提高，需要规范化协作流程，比如代码风格、错误处理、包管理、接口规范、单元测试规范等。
+Go有一些很多人无法忍受的强制要求，比如要求Public的变量必须是大写、大括号换不换行&hellip;很难说这是好还是坏&hellip;每个人有不同的taste，但是可以肯定的一点是，Go写出来的代码更加统一。</p></li>
+
+<li><p>编程哲学的重塑</p>
+
+<p>”如果一个特性不对解决问题有显著的价值，那么就不提供它“</p>
+
+<p>极力维持语言的简洁，关键字非常少，这点我非常喜欢&hellip;就跟喜欢Apple的设计一样。
+Go不支持函数和操作符重载，我个人觉得重载并不是很好，反而带来了很多其他负担。
+Go的另一最大的特点是非侵入的接口，相比Java我们显式的继承一个接口，
+Go中我们只要一个结构体实现了一个接口的方法，就自动继承该接口。</p></li>
+</ul>
+
+<p>至于本书中宣称Go将超越Java，编程语言也很像区块链，先来的链将会有很大的红利和庞大的生态，
+比如BTC、ETH。当然Go有非常大的潜力，现在也已经Tiobe排名很高了。</p>
+
+                </section>
+            </article>
+
+            
+
+            
+                <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'https-lunaticf-github-io'; 
+
+     
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+            
+
+            
+
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.github.com/Lunaticf">
+        <i class="fa fa-github-square"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+       © Copyright 2019 <i class="fa fa-heart" aria-hidden="true"></i> Lunaticf
+    
+    </p>
+    <script src="https://lunaticf.github.io/live2d/autoload.js"></script>
+</footer>
+
+        </section>
+
+        <script src="https://lunaticf.github.io/js/jquery-3.3.1.min.js"></script>
+<script src="https://lunaticf.github.io/js/main.js"></script>
+<script src="https://lunaticf.github.io/js/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'your_google_analytics_id', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+
+
+
+    </body>
+</html>

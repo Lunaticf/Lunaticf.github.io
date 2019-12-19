@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Distributed System on 添忧杂货铺</title>
+    <link>https://lunaticf.github.io/categories/distributed-system/</link>
+    <description>Recent content in Distributed System on 添忧杂货铺</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Wed, 18 Dec 2019 19:20:50 +0800</lastBuildDate>
+    
+	<atom:link href="https://lunaticf.github.io/categories/distributed-system/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Distributed System Introduction</title>
+      <link>https://lunaticf.github.io/posts/distributed-system-introduction/</link>
+      <pubDate>Wed, 18 Dec 2019 19:20:50 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/posts/distributed-system-introduction/</guid>
+      <description>分布式系统入门 什么是一致性 CAP理论，一个分布式系统不能同时满足以下特性。 一致性 (Consistency) 可用性 (Availability) 分区容错性 (Partition tolerance) 一致性模型 弱一致性 最终一致性 DNS(Domain Name System) Gossip</description>
+    </item>
+    
+  </channel>
+</rss>

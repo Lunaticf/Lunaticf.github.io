@@ -6,10 +6,55 @@
     <description>Recent content on 添忧杂货铺</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Fri, 13 Sep 2019 21:38:41 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 19 Dec 2019 18:19:58 +0800</lastBuildDate>
     
 	<atom:link href="https://lunaticf.github.io/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>面向切面编程AOP</title>
+      <link>https://lunaticf.github.io/posts/aspect-oriented-programming/</link>
+      <pubDate>Thu, 19 Dec 2019 18:19:58 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/posts/aspect-oriented-programming/</guid>
+      <description>面向切面编程 目前编程范式主要有以下几种： 面向过程编程 面向对象编程 函数式编程 事件驱动编程 面向切面编程 &amp;hellip; 但是面向切面编程相对来说只是OOP的一种</description>
+    </item>
+    
+    <item>
+      <title>Distributed System Introduction</title>
+      <link>https://lunaticf.github.io/posts/distributed-system-introduction/</link>
+      <pubDate>Wed, 18 Dec 2019 19:20:50 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/posts/distributed-system-introduction/</guid>
+      <description>分布式系统入门 什么是一致性 CAP理论，一个分布式系统不能同时满足以下特性。 一致性 (Consistency) 可用性 (Availability) 分区容错性 (Partition tolerance) 一致性模型 弱一致性 最终一致性 DNS(Domain Name System) Gossip</description>
+    </item>
+    
+    <item>
+      <title>Raft</title>
+      <link>https://lunaticf.github.io/posts/raft/</link>
+      <pubDate>Tue, 17 Dec 2019 20:20:31 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/posts/raft/</guid>
+      <description>Abstract Raft是管理replicated log的一种共识算法，Raft比Paxos更加简单好理解。 Introduction 共识算法能够让多个机器在某些failure的</description>
+    </item>
+    
+    <item>
+      <title>Inversion of Control 控制反转</title>
+      <link>https://lunaticf.github.io/posts/inversionofcontrol/</link>
+      <pubDate>Sun, 15 Dec 2019 13:15:47 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/posts/inversionofcontrol/</guid>
+      <description>IoC(Inversion of Control) 学习一个东西，我会首先了解该事物的定义和原理，再自己简单实现一个， 最后学习开源框架的经典实现，个人觉得是不错的方式。 所以本文也分为对应</description>
+    </item>
+    
+    <item>
+      <title>Go语言编程 Notes</title>
+      <link>https://lunaticf.github.io/posts/go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-notes/</link>
+      <pubDate>Mon, 02 Dec 2019 21:40:34 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/posts/go%E8%AF%AD%E8%A8%80%E7%BC%96%E7%A8%8B-notes/</guid>
+      <description>Go语言编程读书笔记 个人还是比较喜欢这种类型的书的，讲很多背景历史和延伸，与其他语言进行比较，读起来很有意思，而不是只是罗列语言的语法。 wh</description>
+    </item>
     
     <item>
       <title>HackAssembler</title>
@@ -18,15 +63,6 @@
       
       <guid>https://lunaticf.github.io/posts/hackassembler/</guid>
       <description>nand2teris - the hack assembler 已经把nand2teris的part1学完了，现在才写的原因是终于到了software hierarchy部分了，project是正</description>
-    </item>
-    
-    <item>
-      <title>Hello</title>
-      <link>https://lunaticf.github.io/posts/hello/</link>
-      <pubDate>Thu, 18 Jul 2019 21:24:15 +0800</pubDate>
-      
-      <guid>https://lunaticf.github.io/posts/hello/</guid>
-      <description>Hello, the cruel world!</description>
     </item>
     
   </channel>

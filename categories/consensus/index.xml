@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>consensus on 添忧杂货铺</title>
+    <link>https://lunaticf.github.io/categories/consensus/</link>
+    <description>Recent content in consensus on 添忧杂货铺</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Tue, 17 Dec 2019 20:20:31 +0800</lastBuildDate>
+    
+	<atom:link href="https://lunaticf.github.io/categories/consensus/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Raft</title>
+      <link>https://lunaticf.github.io/posts/raft/</link>
+      <pubDate>Tue, 17 Dec 2019 20:20:31 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/posts/raft/</guid>
+      <description>Abstract Raft是管理replicated log的一种共识算法，Raft比Paxos更加简单好理解。 Introduction 共识算法能够让多个机器在某些failure的</description>
+    </item>
+    
+  </channel>
+</rss>
