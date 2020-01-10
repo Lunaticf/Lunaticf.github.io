@@ -6,7 +6,7 @@
     <description>Recent content in Categories on 添忧杂货铺</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Thu, 19 Dec 2019 18:19:58 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 09 Jan 2020 17:45:13 +0800</lastBuildDate>
     
 	<atom:link href="https://lunaticf.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
     
@@ -14,9 +14,27 @@
     <item>
       <title></title>
       <link>https://lunaticf.github.io/categories/</link>
-      <pubDate>Thu, 19 Dec 2019 18:19:58 +0800</pubDate>
+      <pubDate>Thu, 09 Jan 2020 17:45:13 +0800</pubDate>
       
       <guid>https://lunaticf.github.io/categories/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>design pattern</title>
+      <link>https://lunaticf.github.io/categories/design-pattern/</link>
+      <pubDate>Thu, 09 Jan 2020 17:45:13 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/categories/design-pattern/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>operating system</title>
+      <link>https://lunaticf.github.io/categories/operating-system/</link>
+      <pubDate>Mon, 23 Dec 2019 00:06:30 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/categories/operating-system/</guid>
       <description></description>
     </item>
     

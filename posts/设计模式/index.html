@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		 
+			
+  
+    <meta name="twitter:card" content="summary"/>
+    
+      <meta name="twitter:image" content="https://lunaticf.github.io/images/avatar.png" />
+    
+  
+  
+  <meta name="twitter:title" content="GoF Design Patterns in Java&#39;s core libraries"/>
+  <meta name="twitter:description" content="天下之看灯者，看灯灯外；看烟火者，看烟火烟火外。未有身入灯中、光中、影中、烟中、火中，闪烁变幻，不知其为王宫内之烟火，亦不知其为烟火内之王宫"/>
+  
+  
+  
+  
+    <meta name="twitter:creator" content="@Lunaticf"/>
+  
+
+
+
+		
+		<meta name="author" content="Lunaticf">
+		<meta name="description" content="添忧杂货铺">
+		<meta name="generator" content="Hugo 0.55.6" />
+		<title>GoF Design Patterns in Java&#39;s core libraries &middot; 添忧杂货铺</title>
+		<link rel="shortcut icon" href="https://lunaticf.github.io/images/favicon.ico">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/style.css">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/highlight.css">
+
+		
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/font-awesome.min.css">
+		
+
+		
+		<link href="https://lunaticf.github.io/index.xml" rel="alternate" type="application/rss+xml" title="添忧杂货铺" />
+		
+
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='https://lunaticf.github.io/'> <span class="arrow">←</span>Home</a>
+	
+	<a href='https://lunaticf.github.io/posts'>Archive</a>
+	<a href='https://lunaticf.github.io/tags'>Tags</a>
+	<a href='https://lunaticf.github.io/about'>About</a>
+
+	
+</nav>
+
+
+        <section id="wrapper" class="post">
+            <article>
+                <header>
+                    <h1>
+                        GoF Design Patterns in Java&#39;s core libraries
+                    </h1>
+                    <h2 class="headline">
+                    Jan 9, 2020 17:45
+                    · 1206 words
+                    · 3 minute read
+                      <span class="tags">
+                      
+                      
+                          
+                              <a href="https://lunaticf.github.io/tags/design-pattern">design pattern</a>
+                          
+                      
+                      
+                      </span>
+                    </h2>
+                </header>
+                
+                <section id="post-body">
+                    
+
+<blockquote>
+<p><font face="STCAIYUN">天下之看灯者，看灯灯外；看烟火者，看烟火烟火外。未有身入灯中、光中、影中、烟中、火中，闪烁变幻，不知其为王宫内之烟火，亦不知其为烟火内之王宫也。 —— 张岱
+</font></p>
+</blockquote>
+
+<p>有人说设计模式是故弄玄虚，过度设计。自然这样的话也没错，一千个人有一千个哈姆雷特。
+只要你能work，就是好猫。我本身是很喜欢简单的设计哲学的人，所以我在学习设计模式的时候也怀疑过，这些看起来这么晦涩的东西是否是忽悠人的。但是，设计模式显然是好东西。
+什么是pattern?下面是wiki的解释。</p>
+
+<blockquote>
+<p>A pattern is a regularity in the world, in human-made design, or in abstract ideas.</p>
+</blockquote>
+
+<p>pattern就是前人对所有踩过的坑，见过的事物的总结出来的模式。如果你觉得一个设计模式很难理解，那只是因为你还没碰到这个设计模式的场景，就是我们见得做得不够多。当然我觉得有些东西真的是要自己必须踩过才能理解，设计模式显然就是这样的东西&hellip;所以我觉得我们可以留个大致的印象，日后碰到一个场景的时候，没准突然灵光一闪，deja vu一来，这不正好可以用我看过的什么XXX模式么。总结就是只有经历过才能感同身受。真正学会设计模式的境界是全部忘掉，写完代码一看，到处都是设计模式。</p>
+
+<blockquote>
+<p>一言以蔽之，设计模式的本质就是一句话：将软件中变化的部分和不变的部分分开。</p>
+</blockquote>
+
+<p>那这篇blog其实是源于今天逛Stackoverflow看到的一个非常好的回答~感觉真的是体现了Stackoverflow这样的群智协同社区的绝妙之处。</p>
+
+<p>问题就是，这么多设计模式在JDK源码中的实践。
+最高答案收到了3000多个赞，列举了各种设计模式对应的体现，觉得非常不错。尽管我写的代码还不够多，很多设计模式也不懂，但是这里先mark和翻译一下，慢慢来看和补充解读。</p>
+
+<h3 id="创建型模式-灵活的创建对象">创建型模式 (灵活的创建对象)</h3>
+
+<h4 id="工厂">工厂</h4>
+
+<ul>
+<li>java.util.Calendar#getInstance()</li>
+<li>java.util.ResourceBundle#getBundle()</li>
+<li>java.text.NumberFormat#getInstance()</li>
+<li>java.nio.charset.Charset#forName()</li>
+<li>java.net.URLStreamHandlerFactory#createURLStreamHandler(String) (Returns singleton object per protocol)</li>
+<li>java.util.EnumSet#of()</li>
+<li>javax.xml.bind.JAXBContext#createMarshaller() and other similar methods</li>
+</ul>
+
+<h4 id="抽象工厂">抽象工厂</h4>
+
+<ul>
+<li>javax.xml.parsers.DocumentBuilderFactory#newInstance()</li>
+<li>javax.xml.transform.TransformerFactory#newInstance()</li>
+<li>javax.xml.xpath.XPathFactory#newInstance()</li>
+</ul>
+
+<h4 id="建造者模式">建造者模式</h4>
+
+<ul>
+<li>java.lang.StringBuilder#append() (unsynchronized)</li>
+<li>java.lang.StringBuffer#append() (synchronized)</li>
+<li>java.nio.ByteBuffer#put() (also on CharBuffer, ShortBuffer, IntBuffer, LongBuffer, FloatBuffer and DoubleBuffer)</li>
+<li>javax.swing.GroupLayout.Group#addComponent()</li>
+<li>All implementations of java.lang.Appendable</li>
+<li>java.util.stream.Stream.Builder</li>
+</ul>
+
+<h4 id="原型模式">原型模式</h4>
+
+<ul>
+<li>java.lang.Object#clone() (the class has to implement java.lang.Cloneable)</li>
+</ul>
+
+<h4 id="单例模式">单例模式</h4>
+
+<ul>
+<li>java.lang.Runtime#getRuntime()</li>
+<li>java.awt.Desktop#getDesktop()</li>
+<li>java.lang.System#getSecurityManager()</li>
+</ul>
+
+<h3 id="结构型模式-类和对象的组合">结构型模式 (类和对象的组合)</h3>
+
+<h4 id="适配器模式">适配器模式</h4>
+
+<ul>
+<li>java.util.Arrays#asList()</li>
+<li>java.util.Collections#list()</li>
+<li>java.util.Collections#enumeration()</li>
+<li>java.io.InputStreamReader(InputStream) (returns a Reader)</li>
+<li>java.io.OutputStreamWriter(OutputStream) (returns a Writer)</li>
+<li>javax.xml.bind.annotation.adapters.XmlAdapter#marshal() and #unmarshal()</li>
+</ul>
+
+<h4 id="桥接模式">桥接模式</h4>
+
+<p>None comes to mind yet.</p>
+
+<h4 id="组合模式">组合模式</h4>
+
+<ul>
+<li>java.awt.Container#add(Component) (practically all over Swing thus)</li>
+<li>javax.faces.component.UIComponent#getChildren() (practically all over JSF UI thus)</li>
+</ul>
+
+<h4 id="外观模式">外观模式</h4>
+
+<ul>
+<li>javax.faces.context.FacesContext, it internally uses among others the abstract/interface types LifeCycle, ViewHandler, NavigationHandler and many more without that the enduser has to worry about it (which are however overrideable by injection).</li>
+<li>javax.faces.context.ExternalContext, which internally uses ServletContext, HttpSession, HttpServletRequest, HttpServletResponse, etc.</li>
+</ul>
+
+<h4 id="装饰器模式">装饰器模式</h4>
+
+<ul>
+<li>All subclasses of java.io.InputStream, OutputStream, Reader and Writer have a constructor taking an instance of same type.</li>
+<li>java.util.Collections, the checkedXXX(), synchronizedXXX() and unmodifiableXXX() methods.</li>
+<li>javax.servlet.http.HttpServletRequestWrapper and HttpServletResponseWrapper</li>
+<li>javax.swing.JScrollPane</li>
+</ul>
+
+<h4 id="代理模式">代理模式</h4>
+
+<ul>
+<li>java.lang.reflect.Proxy</li>
+<li>java.rmi.*</li>
+<li>javax.ejb.EJB (explanation here)</li>
+<li>javax.inject.Inject (explanation here)</li>
+<li>javax.persistence.PersistenceContext</li>
+</ul>
+
+<h4 id="享元模式-缓冲重用">享元模式(缓冲重用)</h4>
+
+<ul>
+<li>java.lang.Integer#valueOf(int) (also on Boolean, Byte, Character, Short, Long and BigDecimal)</li>
+</ul>
+
+<h3 id="行为型模式-对象间通信">行为型模式 (对象间通信)</h3>
+
+<h4 id="责任链模式">责任链模式</h4>
+
+<ul>
+<li>java.util.logging.Logger#log()</li>
+<li>javax.servlet.Filter#doFilter()</li>
+</ul>
+
+<h4 id="命令模式">命令模式</h4>
+
+<ul>
+<li>All implementations of java.lang.Runnable</li>
+<li>All implementations of javax.swing.Action</li>
+</ul>
+
+<h4 id="解释器模式">解释器模式</h4>
+
+<ul>
+<li>java.util.Pattern</li>
+<li>java.text.Normalizer</li>
+<li>All subclasses of java.text.Format</li>
+<li>All subclasses of javax.el.ELResolver</li>
+</ul>
+
+<h4 id="迭代器模式">迭代器模式</h4>
+
+<ul>
+<li>All implementations of java.util.Iterator (thus among others also java.util.Scanner!).</li>
+<li>All implementations of java.util.Enumeration</li>
+</ul>
+
+<h4 id="中介者模式">中介者模式</h4>
+
+<ul>
+<li>java.util.Timer (all scheduleXXX() methods)</li>
+<li>java.util.concurrent.Executor#execute()</li>
+<li>java.util.concurrent.ExecutorService (the invokeXXX() and submit() methods)</li>
+<li>java.util.concurrent.ScheduledExecutorService (all scheduleXXX() methods)</li>
+<li>java.lang.reflect.Method#invoke()</li>
+</ul>
+
+<h4 id="备忘录模式">备忘录模式</h4>
+
+<ul>
+<li>java.util.Date (the setter methods do that, Date is internally represented by a long value)</li>
+<li>All implementations of java.io.Serializable</li>
+<li>All implementations of javax.faces.component.StateHolder</li>
+</ul>
+
+<h4 id="观察者模式">观察者模式</h4>
+
+<ul>
+<li>java.util.Observer/java.util.Observable (rarely used in real world though)</li>
+<li>All implementations of java.util.EventListener (practically all over Swing thus)</li>
+<li>javax.servlet.http.HttpSessionBindingListener</li>
+<li>javax.servlet.http.HttpSessionAttributeListener</li>
+<li>javax.faces.event.PhaseListener</li>
+</ul>
+
+<h4 id="状态模式">状态模式</h4>
+
+<ul>
+<li>javax.faces.lifecycle.LifeCycle#execute() (controlled by FacesServlet, the behaviour is dependent on current phase (state) of JSF lifecycle)</li>
+</ul>
+
+<h4 id="策略模式">策略模式</h4>
+
+<ul>
+<li>java.util.Comparator#compare(), executed by among others Collections#sort().</li>
+<li>javax.servlet.http.HttpServlet, the service() and all doXXX() methods take HttpServletRequest and HttpServletResponse and the implementor has to process them (and not to get hold of them as instance variables!).</li>
+<li>javax.servlet.Filter#doFilter()</li>
+</ul>
+
+<h4 id="模板模式-就是在抽象类中定义具体方法">模板模式 (就是在抽象类中定义具体方法)</h4>
+
+<ul>
+<li>All non-abstract methods of java.io.InputStream, java.io.OutputStream, java.io.Reader and java.io.Writer.</li>
+<li>All non-abstract methods of java.util.AbstractList, java.util.AbstractSet and java.util.AbstractMap.</li>
+<li>javax.servlet.http.HttpServlet, all the doXXX() methods by default sends a HTTP 405 &ldquo;Method Not Allowed&rdquo; error to the response. You&rsquo;re free to implement none or any of them.</li>
+</ul>
+
+                </section>
+            </article>
+
+            
+
+            
+                <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'https-lunaticf-github-io'; 
+
+     
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+            
+
+            
+
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.github.com/Lunaticf">
+        <i class="fa fa-github-square"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+       © Copyright 2020 <i class="fa fa-heart" aria-hidden="true"></i> Lunaticf
+    
+    </p>
+    <script src="https://lunaticf.github.io/live2d/autoload.js"></script>
+</footer>
+
+        </section>
+
+        <script src="https://lunaticf.github.io/js/jquery-3.3.1.min.js"></script>
+<script src="https://lunaticf.github.io/js/main.js"></script>
+<script src="https://lunaticf.github.io/js/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'your_google_analytics_id', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+
+
+
+    </body>
+</html>

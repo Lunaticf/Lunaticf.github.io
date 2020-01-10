@@ -14,7 +14,7 @@
   
   
   <meta name="twitter:title" content="Raft"/>
-  <meta name="twitter:description" content="Abstract Raft是管理replicated log的一种共识算法，Raft比Paxos更加简单好理解。 Introduction 共识算法能够让多个机器在某些failure的"/>
+  <meta name="twitter:description" content="人生到处知何似，应似飞鸿踏雪泥。 &mdash; 苏轼《和子由渑池怀旧》 Raft论文翻译和总结 Abstract Raft是管理replicated log的一种共识算法，Ra"/>
   
   
   
@@ -66,8 +66,8 @@
                     </h1>
                     <h2 class="headline">
                     Dec 17, 2019 20:20
-                    · 1382 words
-                    · 3 minute read
+                    · 4825 words
+                    · 10 minute read
                       <span class="tags">
                       
                       
@@ -82,6 +82,12 @@
                 
                 <section id="post-body">
                     
+
+<blockquote>
+<p><font face="STCAIYUN">人生到处知何似，应似飞鸿踏雪泥。 &mdash; 苏轼《和子由渑池怀旧》</font></p>
+</blockquote>
+
+<p>Raft论文翻译和总结</p>
 
 <h3 id="abstract">Abstract</h3>
 
@@ -173,6 +179,195 @@ Raft使用一个新的共识方法，配置改变的时候还可以正常work。
 
 <h3 id="the-raft-consensus-algorithm">The Raft consensus algorithm</h3>
 
+<p>Raft首先选择一个leader，给予leader全部的责任来管理日志。Leader从客户端接收日志项，复制到其他服务器上，并且告诉服务器们是否是安全来执行log。有这样一个Leader简化了log的管理。
+比如，Leader可以决定新entry的顺序，data flow从Leader到followers。一个Leader可能会fail，系统会自动重新选举一个新Leader。</p>
+
+<p>基于这样一个强有力的Leader，Raft将问题解构成了三个部分：</p>
+
+<ul>
+<li>Leader election</li>
+<li>Log replication</li>
+<li>Safety</li>
+</ul>
+
+<h4 id="5-1-raft-basics">5.1 Raft basics</h4>
+
+<p>Raft包含很多节点，通常5是一个选择，因为系统可以容忍2个failure。
+任意时间，一个节点都有三个状态：</p>
+
+<ul>
+<li>Leader</li>
+<li>Follower</li>
+<li>Candidate</li>
+</ul>
+
+<p>如果一个client给Follower发请求，也会被转发给Leader，Leader全权负责。</p>
+
+<p>Raft把时间划分成任意长度的term，每个term一开始都是一个选举过程。
+那么有些term会没有选择出一个leader就结束，可能因为系统中有多个人同时竞争。</p>
+
+<p>Term在Raft中作为逻辑时钟，并且能够让服务器检测到旧的leader。
+每个服务器都有一个currentTerm，并且单调递增。
+如果一个candidate或者leader检测到自己term过期了，立即会转变为follower状态。</p>
+
+<p>Raft仅需要两种RPC请求：</p>
+
+<ul>
+<li>RequestVote RPC</li>
+<li>AppendEntries RPC (同时就提供了心跳功能)</li>
+</ul>
+
+<h4 id="5-2-leader-election">5.2 Leader election</h4>
+
+<p>Raft使用心跳机制来出发leader选举，一个新来的节点一开始都是follower，一段时间后如果没收到leader的
+心跳或者candidate的请求，就会自己变成candidate。</p>
+
+<p>candidate就会并发的向集群中其他服务器发送RequestVote RPC，以下情况会改变candidate的状态：</p>
+
+<ul>
+<li>赢得选举
+<br /></li>
+</ul>
+
+<p>majority rule确保了只能最多有一个人赢得选举。</p>
+
+<ul>
+<li>有另一个人已经赢啦</li>
+</ul>
+
+<p>如果收到一个AppendEntries的term大于等于当前自己的term，自己就放弃啦。小就不管。</p>
+
+<ul>
+<li>一段时间过去 没有人赢</li>
+</ul>
+
+<p>这是有可能的，因为分布式的环境嘛，投票会split。那么如何解决呢，因为假设马上或者经过一个固定的时间再次发起，因为网络拓扑，可能还是会没人胜利。那么Raft解决的方法也很简单好用，等待一个随机的时间，能够大概率快速让一个人胜出。</p>
+
+<p>选举部分展示了Raft有多好理解，确实。一开始我们想用一个rank算法，根据rank计算当前系统的leader。
+然后我们发现总是引入更多的细节和问题。最后随机时间randomized retry重试是最有用的。</p>
+
+<h4 id="5-3-log-replication">5.3 Log replication</h4>
+
+<p>Logs are composed of entries.
+每一个entry都包含term和所操作的命令。</p>
+
+<p>Leader决定一个entry是否能最终执行，对state machine造成改变，这样就叫做commited。
+Raft保证commited entry将会最终在所有服务器上持久化。
+注意这里为什么说最终，因为只要大多数服务器已经收到log了，就可以commit了。</p>
+
+<p>Raft通过以下两个属性来实现Log Matching Property：</p>
+
+<ul>
+<li><p>如果不同log中的两个entry有相同的index和term，那么它们存储了相同的command。</p>
+
+<p>因为在一个term里面leader每个entry都赋予不一样的index，log entry永远不会改变position。</p></li>
+
+<li><p>如果不同log中的两个entry有相同的index和term，那么所有之前的entry都相同。</p>
+
+<p>leader发起AppendEntries RPC的时候，会附带上前一个entry的index和term，如果一个follower没有这个pre entry，他就会拒绝这个new entry，有点滑动窗口的意思。</p></li>
+</ul>
+
+<p>那么只要一个follower对一个new entry返回success，leader就知道follower上的log跟自己是完全一样的。</p>
+
+<p>leader crash可能会造成log不一致，比如他还没来得及复制所有entry。
+总之，一个服务器上可能会missing log或者多出log。
+Raft中leader可以强制大家都听我的log来解决问题。</p>
+
+<p>如何解决？假设现在有一个leader和一个follower，log不一致。
+我们需要找到两个log最新的一致的地方，把follower后面的删掉，leader后面的复制到follower。
+leader会对每个follower维护一个nextIndex，which is leader将要发给follower的下一个entry。
+如果leader发送AppendEntries RPC的时候follower拒绝了，leader就会&ndash;nextIndex，重试，
+如此这般就找到了joint point，然后之后就都一致啦。</p>
+
+<p>我们可以对这个算法做一些小优化，减少rejected AppendEntries RPCs的数量，follower可以返回那个错误的entry的term的最小的entry index，leader就可以往前跳一个term，而不是每次跳一个entry。</p>
+
+<blockquote>
+<p>The Leader Append-Only Property. A leader never overwrites or deletes entries in its own log
+区块链？hhh</p>
+</blockquote>
+
+<p>只要大多数节点正常，leader就能正常commit log，所以少数slow follower并不会影响性能，相当于是异步操作了。</p>
+
+<h4 id="5-4-safety">5.4 Safety</h4>
+
+<p>这部分给Leader的选举加以限制来保证Raft的正确性，Leader Completeness Property。</p>
+
+<h5 id="5-4-1-election-restriction">5.4.1 Election restriction</h5>
+
+<p>Raft使用投票过程来避免一个不包含所有commit entry的候选者赢得选举。
+一个Candidate必须与大多数节点交互，如果一个节点认为自己的log更新，就会拒绝RequestVote RPC。
+Raft通过比较logs中的最后一个entry的index和term来决定谁更新。</p>
+
+<h5 id="5-4-2-committing-entries-from-previous-terms">5.4.2 Committing entries from previous terms</h5>
+
+<p>Raft从不commit过去term的command。</p>
+
+<h5 id="5-4-3-safety-argument">5.4.3 Safety argument</h5>
+
+<p>假设Leader Completeness
+Property不成立，我们可提供一个矛盾。
+假设一个leader的term为T，commit了一个entry。但是这个entry下一个leader没有。</p>
+
+<h4 id="5-5-follower-and-candidate-crashes">5.5 Follower and candidate crashes</h4>
+
+<p>其实follower更多的会crash，Raft通过重试来handle。
+Raft RPCs是幂等的，所以没关系。</p>
+
+<h4 id="5-6-timing-and-availability">5.6 Timing and availability</h4>
+
+<p>Raft中安全性自然不能依赖于时间，而availability不可避免的与Timing有关。
+比如如果信息交换突然崩了，那么自然没法赢得选举。</p>
+
+<p>Leader选举是最关键的，只要满足</p>
+
+<pre><code>broadcastTime ≪ electionTimeout ≪ MTBF
+</code></pre>
+
+<p>Raft就能work。broadcastTime是一个服务器发送给集群其他服务器的来回时间。
+electionTimeout就是多久之内没有收到大多数人投票就随机等待的时间。
+MTBF是一个server多久会crash的时间。</p>
+
+<p>从这个式子的假设来看，系统会非常稳定的运作。</p>
+
+<p>broadcastTime和MTBF是底层基础设施的参数，我们只能指定electionTimeout的时间。
+通常broadcastTime在0.5ms到20ms，electionTimeout一般就在10ms-500ms。
+而MTBF通常在几个月之久。</p>
+
+<h4 id="6-cluster-membership-changes">6 Cluster membership changes</h4>
+
+<p>到此我们都假设cluster的成员是固定的，没有考虑动态准入。
+我们要保证的是随着配置的改变，不可能出现两个leader。
+而不幸的是，如果要实现动态切换，任何方法都是不安全的。</p>
+
+<h4 id="8-client-interaction">8 Client interaction</h4>
+
+<p>Raft客户端与其他共识并无不同，如果client发送请求到了非leader节点，该节点将会返回leader的网络url，
+which is sent by leader via AppendEntries)。</p>
+
+<p>假如一个leader在commit之后挂了，没来得及通知client，此时client就会再次发送请求，导致该事务被执行两遍。这就要从应用层做改变了，客户端要定义唯一的序列号，状态机为每个client记录最新执行的序列号，那么碰到重复的就不用执行了。</p>
+
+<h4 id="10-related-work">10 Related work</h4>
+
+<p>有很多共识算法的研究，主要归为以下几类：</p>
+
+<ul>
+<li>Lamport最初的Paxos 和Lamport努力想解释清楚的Paxos ：）</li>
+<li>Paxos修补版</li>
+<li>具体实现自己的共识算法的系统 比如Chubby，ZooKeeper，Spanner。</li>
+<li>Viewstamped Replication</li>
+</ul>
+
+<p>Raft和Paxos最大的不同在于Raft强有力的Leader设计，Paxos更像去中心化的共识，所以要复杂许多。
+Raft与VR、ZooKeeper等相比，最小化了followers的职能。比如log只从leader流向follower。
+VR、ZooKeeper定义了10种消息类型。而Raft只有4种，两种RPC和其响应。</p>
+
+<h4 id="11-conclusion">11 Conclusion</h4>
+
+<blockquote>
+<p>Raft, which we have shown to be more understandable than Paxos.
+That&rsquo;s enough.</p>
+</blockquote>
+
                 </section>
             </article>
 
@@ -214,7 +409,7 @@ Raft使用一个新的共识方法，配置改变的时候还可以正常work。
     
     <p class="small">
     
-       © Copyright 2019 <i class="fa fa-heart" aria-hidden="true"></i> Lunaticf
+       © Copyright 2020 <i class="fa fa-heart" aria-hidden="true"></i> Lunaticf
     
     </p>
     <script src="https://lunaticf.github.io/live2d/autoload.js"></script>
