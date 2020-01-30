@@ -27,12 +27,6 @@
   </url>
   
   <url>
-    <loc>https://lunaticf.github.io/tags/java/</loc>
-    <lastmod>2020-01-30T11:59:20+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
     <loc>https://lunaticf.github.io/posts/java-collections/</loc>
     <lastmod>2020-01-30T11:59:20+08:00</lastmod>
   </url>
@@ -45,6 +39,12 @@
   
   <url>
     <loc>https://lunaticf.github.io/tags/</loc>
+    <lastmod>2020-01-30T11:59:20+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>https://lunaticf.github.io/tags/java/</loc>
     <lastmod>2020-01-30T11:59:20+08:00</lastmod>
     <priority>0</priority>
   </url>
