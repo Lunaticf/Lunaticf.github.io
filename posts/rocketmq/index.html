@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		 
+			
+  
+    <meta name="twitter:card" content="summary"/>
+    
+      <meta name="twitter:image" content="https://lunaticf.github.io/images/avatar.png" />
+    
+  
+  
+  <meta name="twitter:title" content="RocketMQ Internals"/>
+  <meta name="twitter:description" content="月光倒囊入水，江涛吞吐，露气吸之，噀天为白。 林下漏月光，疏疏如残雪。 &mdash; 张岱 随着微服务架构兴起，原有系统通常需要垂直拆分，孵化出更小粒度的小型"/>
+  
+  
+  
+  
+    <meta name="twitter:creator" content="@Lunaticf"/>
+  
+
+
+
+		
+		<meta name="author" content="Lunaticf">
+		<meta name="description" content="添忧杂货铺">
+		<meta name="generator" content="Hugo 0.55.6" />
+		<title>RocketMQ Internals &middot; 添忧杂货铺</title>
+		<link rel="shortcut icon" href="https://lunaticf.github.io/images/favicon.ico">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/style.css">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/highlight.css">
+
+		
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/font-awesome.min.css">
+		
+
+		
+		<link href="https://lunaticf.github.io/index.xml" rel="alternate" type="application/rss+xml" title="添忧杂货铺" />
+		
+
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='https://lunaticf.github.io/'> <span class="arrow">←</span>Home</a>
+	
+	<a href='https://lunaticf.github.io/posts'>Archive</a>
+	<a href='https://lunaticf.github.io/tags'>Tags</a>
+	<a href='https://lunaticf.github.io/about'>About</a>
+
+	
+</nav>
+
+
+        <section id="wrapper" class="post">
+            <article>
+                <header>
+                    <h1>
+                        RocketMQ Internals
+                    </h1>
+                    <h2 class="headline">
+                    Jan 10, 2020 23:58
+                    · 5049 words
+                    · 11 minute read
+                      <span class="tags">
+                      
+                      
+                          
+                              <a href="https://lunaticf.github.io/tags/rocketmq">RocketMQ</a>
+                          
+                      
+                      
+                      </span>
+                    </h2>
+                </header>
+                
+                <section id="post-body">
+                    
+
+<blockquote>
+<p><font face="STCAIYUN">月光倒囊入水，江涛吞吐，露气吸之，噀天为白。 林下漏月光，疏疏如残雪。 &mdash; 张岱</font></p>
+</blockquote>
+
+<p>随着微服务架构兴起，原有系统通常需要垂直拆分，孵化出更小粒度的小型系统，因此对系统间松耦合的要求越来越高，目前RPC、服务治理、消息中间件几乎成为标配。RocketMQ作为双十一洗礼的框架，也是现在比较主流的消息中间件。</p>
+
+<p>自己也是之前有接触过RocketMQ的开源活动志愿者社区，所以还是比较有缘hhh。</p>
+
+<p>各类消息中间件的对比：</p>
+
+<ul>
+<li>Kafka
+
+<ul>
+<li>单机10万级 高吞吐 一般配合大数据类系统进行实时数据计算、日志采集等</li>
+<li>topic过多吞吐量会大幅度下降</li>
+<li>延迟 ms级</li>
+</ul></li>
+<li>RocketMQ
+
+<ul>
+<li>单机10万级 高吞吐</li>
+<li>能够支持更大数量的topic</li>
+</ul></li>
+<li>RabbitMQ
+
+<ul>
+<li>单机万级</li>
+<li>延迟 微秒级</li>
+<li>基于Erlang开发，并发能力很强</li>
+</ul></li>
+</ul>
+
+<p>至于ActiveMQ，现在已经不怎么用了。RabbitMQ用得非常多，但是Erlang相对来说还是较冷门的语言。而RocketMQ性能很好，主流功能都支持，所以目前越来越多的公司使用RocketMQ。如果是大数据领域，Kafka占据主导地位。</p>
+
+<p>RocketMQ的设计思想是懂得取舍，消息队列的理想状态是消息有且只能被消费一次，但是要做到这一点，必然要牺牲性能。RocketMQ把这个问题交给消费者，消费者实现幂等，从而降低RocketMQ内核复杂度。</p>
+
+<p>首先把RocketMQ源码down下来~
+由于内容较多，就不贴源码了，会给出源码的位置，能够自行查阅。</p>
+
+<h3 id="路由中心nameserver">路由中心NameServer</h3>
+
+<p>服务发现我们已经不陌生了，RPC框架就会有服务注册中心。
+那么RocketMQ中的NameServer存放什么信息呢？
+RocketMQ采用基于主题的发布订阅机制，消息生产者发送某一消息到一个主题，
+消息服务器将把这个消息转发到订阅该主题的一个或多个消费者手里。</p>
+
+<p>那么我们需要什么来完成这样的任务？</p>
+
+<ul>
+<li>生产者要根据topic找到对应的消息服务器(broker)并发送消息</li>
+<li>消息服务器肯定要部署集群 防止宕机</li>
+</ul>
+
+<p>所以NameServer存放的就是topic-&gt;server的映射关系，NameServer和每台broker保持长连接，并且间隔10s检测是否存活。NameServer本身的高可用通过部署多台服务器来实现，但彼此之间互不通信。
+也就是不保证高一致性，但是这没有什么大的影响。所以RocketMQ抛弃了Zookeeper，
+keep it simple。</p>
+
+<p><img src="https://s2.ax1x.com/2020/01/11/l4berq.png" alt="l4berq.png" /></p>
+
+<h4 id="启动流程">启动流程</h4>
+
+<p>NameServer启动类 - namesrv.NamesrvStartup</p>
+
+<ol>
+<li>解析配置文件和启动命令行
+
+<ul>
+<li>创建NameServerConfig 业务参数</li>
+<li>创建NettyServerConfig Netty网络参数</li>
+</ul></li>
+<li>根据启动属性创建NameServerController控制器
+
+<ul>
+<li>加载KV配置，创建NettyServer</li>
+<li>定时任务1 每隔10s扫描一次Broker 移除不激活的</li>
+<li>定时任务2 每隔10分钟打印一次KV配置</li>
+</ul></li>
+<li>注册JVM钩子函数并启动服务器
+
+<ul>
+<li>一种编程技巧 如果代码中使用了线程池 一种优雅的方式就是在JVM关闭之前关闭线程池，及时释放资源。</li>
+</ul></li>
+</ol>
+
+<h4 id="路由注册">路由注册</h4>
+
+<p>来看看路由的数据结构 - namesrv.routeinfo.RouteInfoManager</p>
+
+<ul>
+<li>HashMap<String/* topic */, List<QueueData>&gt; topicQueueTable; topic消息队列路由信息</li>
+<li>HashMap<String/* brokerName */, BrokerData> brokerAddrTable; 单个Broker的信息 Broker所属集群</li>
+<li>HashMap<String/* clusterName */, Set<String/* brokerName */>&gt; clusterAddrTable; Broker集群信息 存储集群中所有brokerName</li>
+<li>HashMap<String/* brokerAddr */, BrokerLiveInfo> brokerLiveTable; Broker状态信息</li>
+<li>HashMap<String/* brokerAddr */, List<String>/* Filter Server */&gt; filterServerTable; 类模式消息过滤 后面介绍</li>
+</ul>
+
+<h5 id="broker发送心跳包">Broker发送心跳包</h5>
+
+<p>Broker发送心跳给NameServer完成注册，每隔30s向集群所有NameServer发送心跳包，
+NameServer收到心跳包会更新BrokerLiveInfo，然后NameServer会每隔10s扫描BrokerLiveInfo，如果120s都没收到心跳，将移除该Broker的路由信息并且关闭Socket连接。</p>
+
+<p>发送心跳包，封装了请求头 header ：
+- brokerAddr 本broker的地址 就是ip
+- brokerId 0为Master  大于0是Slave
+- brokerName broker名称
+- clusterName 集群名称
+- haServerAddr 初次请求时该值为空</p>
+
+<p>requestBody里面存放了消息过滤服务器列表和一些默认的主题配置。</p>
+
+<h5 id="nameserver处理心跳包">NameServer处理心跳包</h5>
+
+<p>rocketmq.common.protocol.RequestCode类存放了所有的RocketMQ网络请求码，
+每一个请求都有一个RocketMQ，在被请求服务对应的网络处理器processor包中，就会有对应请求码的
+处理逻辑。</p>
+
+<pre><code class="language-java">// 简化版示例
+public static final int REGISTER_BROKER = 103;
+
+switch (request.getCode()) {
+    case RequestCode.REGISTER_BROKER:
+        // 检查MQ版本是否匹配
+        Version brokerVersion = MQVersion.value2Version(request.getVersion());
+        if (brokerVersion.ordinal() &gt;= MQVersion.Version.V3_0_11.ordinal()) {
+            return this.registerBrokerWithFilterServer(ctx, request);
+        } else {
+            return this.registerBroker(ctx, request);
+        }
+    case RequestCode.UNREGISTER_BROKER:
+        return this.unregisterBroker(ctx, request);
+}
+</code></pre>
+
+<p>最终会调用RouteInfoManager类来处理，整个过程都加了写锁，其实就是维护上面提到的RouteInfoManager管理的那些个map。
+1. 维护clusterAddrTable 把broker加入到所属集群 如果集群不存在 创建
+2. 维护BrokerData信息
+3. 如果broker是Master，并且broker集群的topic信息发生变化，或者是Master首次注册，
+那么需要更新或创建Topic元数据，维护topicQueueTable。
+4. 更新BrokerLiveInfo
+5. 注册Broker的消息过滤服务器列表，另外如果Broker是从节点，需要查找其对应的Master并更新其MasterAddr</p>
+
+<p>因为一般是多个消息发送者访问NameServer查询路由，所以RouteInfoManager使用了锁粒度小的读写锁，允许多个消息发送者并发读，保证消息发送时的高并发。
+但是同一时刻NameServer只处理一个心跳包，多个心跳包变成了串行的执行，因为写锁是完全互斥的。
+这是一个读写锁非常经典的使用场景~</p>
+
+<h4 id="路由删除">路由删除</h4>
+
+<p>路由删除大同小异，这里就不过多赘述了，主要有两个条件触发路由：</p>
+
+<ul>
+<li>NameServer定期扫描broker状态的时候发现一个broker已经120s没更新了</li>
+<li>broker正常关闭，会发送unregisterBroker指令</li>
+</ul>
+
+<h4 id="路由发现">路由发现</h4>
+
+<p>RocketMQ路由发现是非实时的，当路由发生变化，不会主动推送给客户端，而是客户端定时拉取最新的路由。
+那么有个问题，NS经过120s才会更新失效的broker，此时producer不就发送消息到宕机的broker了吗，导致
+消息发送失败，消息发送不是不可用了吗？？</p>
+
+<h3 id="消息发送">消息发送</h3>
+
+<p>RocketMQ发送普通消息有三种方式</p>
+
+<ul>
+<li>可靠同步发送</li>
+<li>可靠异步发送 指定一个回调函数 回调任务在新的线程执行</li>
+<li>单向发送 不等待也不注册回调</li>
+</ul>
+
+<p>带着三个问题来研究RocketMQ的消息发送：
+1. 消息发送如何负载均衡
+2. 消息发送如何高可用
+3. 批量发送如何实现一致性</p>
+
+<p>RocketMQ消息封装类是common.message.Message，下面是Message的属性</p>
+
+<pre><code class="language-java">private String topic;                       // 消息的topic
+private int flag;                           // 消息的flag
+private Map&lt;String, String&gt; properties;     // 扩展属性 包括是否等消息存储完成后再返回等
+private byte[] body;                        // 消息体
+</code></pre>
+
+<p>消息生产者的代码都在client模块中，我们用的时候初始化client的一个实例就可以用它来发送消息。
+DefaultMQProducerImpl是默认的消息生产者实现类，生产者启动的流程如下：</p>
+
+<ol>
+<li>检查productGroup是否符合要求 productGroup是生产者所属的group，消息服务器回查事务时会随机选择该组任意一个生产者。</li>
+<li>根据客户端配置创建MQClientInstance实例，整个JVM只存在一个MQClientManager，维护MQClientInstance缓存表。相同的clientId只会创建一个实例，clientId为IP+instance+unitname可选。
+注意到这里同一机器上的两个应用程序岂不是会有相同的id？如果instance为默认值的话，RocketMQ会把instance设置为进程ID，避免了同IP上的两个进程的影响。但是如果是同一个JVM中的两个线程，还是会有同样的MQClientInstance实例。
+MQClientInstance封装了RocketMQ网络处理的API，是消息生产者、消息消费者和NameServer、Broker打交道的网络通道。</li>
+<li>把生产者注册到MQClientInstance，方便后续调用网络请求，进行心跳等。</li>
+<li>启动MQClientInstance。</li>
+</ol>
+
+<h4 id="消息发送基本流程">消息发送基本流程</h4>
+
+<p>首先验证消息符合规范，比如topic、消息体不能为空，消息最大长度等。
+然后就要查找topic的路由信息，知道我们可以往哪些broker节点上发。</p>
+
+<pre><code class="language-java">// 获取topic对应的broker路由
+private TopicPublishInfo tryToFindTopicPublishInfo(final String topic) {
+    // 如果生产者本身有缓存了topic的路由信息
+    if (null == topicPublishInfo || !topicPublishInfo.ok()) {
+        // 如果没有 或者该topic不包含消息队列 去NameServer那里更新
+        this.topicPublishInfoTable.putIfAbsent(topic, new TopicPublishInfo());
+        this.mQClientFactory.updateTopicRouteInfoFromNameServer(topic);
+        topicPublishInfo = this.topicPublishInfoTable.get(topic);
+    }
+}
+第一次发送时，本地没有缓存topic的路由信息，会查询NS获取。
+
+
+</code></pre>
+
+<p>那么找到的TopicPublishInfo包含什么呢？</p>
+
+<pre><code class="language-java">private boolean orderTopic = false;                 // 是否是顺序消息            
+private boolean haveTopicRouterInfo = false;        // 是否包含route信息
+private List&lt;MessageQueue&gt; messageQueueList;        // 该主题队列的消息队列
+private volatile ThreadLocalIndex sendWhichQueue;   // 每选择一次消息队列 该值会自增1 用于选择消息队列
+private TopicRouteData topicRouteData;              // 见下面
+
+// TopicRouteData的属性 一个topic有多个队列
+private String orderTopicConf;                      // 
+private List&lt;QueueData&gt; queueDatas;                 // topic队列的元数据
+private List&lt;BrokerData&gt; brokerDatas;               // topic分布的broker元数据
+// broker过滤服务器列表
+private HashMap&lt;String/* brokerAddr */, List&lt;String&gt;/* Filter Server */&gt; filterServerTable;
+</code></pre>
+
+<p>再来理一下，我们要使用ClientInstance来发送消息，可以实例化多个生产者MQproducer注册到ClientInstance里面，producer通过ClientInstance来发送消息，ClientInstance会查询路由信息，
+并且维护路由的缓存。</p>
+
+<p>如何根据路由信息选择消息队列？采用一个轮询的方式</p>
+
+<ul>
+<li>默认不启用Broker故障延迟 lastBrokerName记录上一次发送失败的Broker 遍历时跳过。
+该算法能够规避故障的Broker，但是如果Broker泵机，我们知道一个Broker有很多队列，如果选择的还是这个Broker上的，那又是失败。注意NameServer检测Broker是否可用是由延迟的，并且也不会主动推送给Broker。</li>
+<li>Broker故障延迟机制
+发送失败后，设置该Broker多久不参与消息发送队列负载。</li>
+</ul>
+
+<p>然后我们就可以调用sendKernelImpl核心方法来真正的发送消息了。</p>
+
+<pre><code class="language-java">private SendResult sendKernelImpl(final Message msg,
+                                    final MessageQueue mq,
+                                    final CommunicationMode communicationMode,
+                                    final SendCallback sendCallback,
+                                    final TopicPublishInfo topicPublishInfo,
+                                    final long timeout)
+</code></pre>
+
+<ol>
+<li>根据MessageQueue拿到Broker的网络地址。</li>
+<li>为消息分配全局唯一ID，如果消息体默认超过4K，启动zip压缩。</li>
+<li>如果注册了消息发送钩子函数before，则在发送前执行</li>
+<li>构建消息发送请求包</li>
+<li>根据消息发送方式 同步 异步 oneWay(无重试)传输消息</li>
+<li>如果注册了消息发送钩子函数after，则在发送后执行</li>
+</ol>
+
+<p>批量发送消息是将同一topic的多条消息一起打包发送，减少网络调用次数。
+这个大同小异，主要就是如何打包多条消息，服务端如何解码多条消息。</p>
+
+<h3 id="消息存储">消息存储</h3>
+
+<h4 id="概要设计">概要设计</h4>
+
+<p>RocketMQ存储部分主要包含以下组件：</p>
+
+<ul>
+<li>CommitLog 消息存储文件 所有消息主题的消息都存储在CommitLog文件中</li>
+<li>ConsumeQueue 消息消费队列 消息到达CommitLog后，将异步转发到消息消费队列 供消息消费者消费</li>
+<li>IndexFile 消息索引文件 主要存储消息key与Offset对应关系</li>
+<li>事务状态服务 存储每条消息事务状态</li>
+<li>定时消息服务 存储延迟队列的消息拉取进度</li>
+</ul>
+
+<h4 id="消息发送存储流程">消息发送存储流程</h4>
+
+<p>DefaultMessageStore是最重要的一个类，其他模块对消息实体的操作都通过这个类。
+该类putMessage将会调用CommitLog类的putMessage类：</p>
+
+<pre><code class="language-java">// 获取当前可以写入的Commitlog文件
+// commitLog每个文件默认1G，满了再创建一个。
+MappedFile unlockMappedFile = null;
+// mappedFileQueue可以看作是store/commitlog文件夹
+MappedFile mappedFile = this.mappedFileQueue.getLastMappedFile();
+
+// commitLog类 #
+// 先尝试获取putMessageLock，这个是个接口，具体实现根据配置为自旋锁或者可重入锁。
+putMessageLock.lock(); //spin or ReentrantLock ,depending on store config
+try {
+    long beginLockTimestamp = this.defaultMessageStore.getSystemClock().now();
+    this.beginTimeInLock = beginLockTimestamp;
+
+    // Here settings are stored timestamp, in order to ensure an orderly
+    // global
+    // 设置消息存储时间
+    msg.setStoreTimestamp(beginLockTimestamp);
+
+    // 如果不存在任何文件 说明本消息是第一次发送
+    // 使用偏移量0创建第一个commit文件
+    if (null == mappedFile || mappedFile.isFull()) {
+        mappedFile = this.mappedFileQueue.getLastMappedFile(0); // Mark: NewFile may be cause noise
+    }
+
+    // 存储消息
+    result = mappedFile.appendMessage(msg, this.appendMessageCallback);
+}
+</code></pre>
+
+<p>RocketMQ通过内存映射文件来提高IO访问性能，CommitLog、ConsumeQueue和IndexFile
+单个文件都设定为固定长度，每个新创建的文件就为该文件第一条消息对应的物理偏移量。</p>
+
+<p>RocketMQ使用MappedFile，MappedFileQueue来封装存储文件。
+MappedFileQueue是对存储目录的封装，管理多个内存映射文件。</p>
+
+<h3 id="消息消费">消息消费</h3>
+
+<h3 id="消息过滤filterserver">消息过滤FilterServer</h3>
+
+<h3 id="主从同步-ha">主从同步(HA)</h3>
+
+<h3 id="事务消息">事务消息</h3>
+
+<h3 id="实战">实战</h3>
+
+                </section>
+            </article>
+
+            
+
+            
+                <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'https-lunaticf-github-io'; 
+
+     
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+            
+
+            
+
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.github.com/Lunaticf">
+        <i class="fa fa-github-square"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+       © Copyright 2020 <i class="fa fa-heart" aria-hidden="true"></i> Lunaticf
+    
+    </p>
+    <script src="https://lunaticf.github.io/live2d/autoload.js"></script>
+</footer>
+
+        </section>
+
+        <script src="https://lunaticf.github.io/js/jquery-3.3.1.min.js"></script>
+<script src="https://lunaticf.github.io/js/main.js"></script>
+<script src="https://lunaticf.github.io/js/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'your_google_analytics_id', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+
+
+
+    </body>
+</html>

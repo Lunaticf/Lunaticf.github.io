@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		 
+			
+  
+    <meta name="twitter:card" content="summary"/>
+    
+      <meta name="twitter:image" content="https://lunaticf.github.io/images/avatar.png" />
+    
+  
+  
+  <meta name="twitter:title" content="Lock and Optimization"/>
+  <meta name="twitter:description" content="最是夜初群籁寂，临轩坐拥一湖星 &mdash; 雍正 锁是最常用的解决并发的手段，而高并发的环境下，频繁的竞争锁会使得程序性能急剧下降，所以有很多方式来优化，"/>
+  
+  
+  
+  
+    <meta name="twitter:creator" content="@Lunaticf"/>
+  
+
+
+
+		
+		<meta name="author" content="Lunaticf">
+		<meta name="description" content="添忧杂货铺">
+		<meta name="generator" content="Hugo 0.55.6" />
+		<title>Lock and Optimization &middot; 添忧杂货铺</title>
+		<link rel="shortcut icon" href="https://lunaticf.github.io/images/favicon.ico">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/style.css">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/highlight.css">
+
+		
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/font-awesome.min.css">
+		
+
+		
+		<link href="https://lunaticf.github.io/index.xml" rel="alternate" type="application/rss+xml" title="添忧杂货铺" />
+		
+
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='https://lunaticf.github.io/'> <span class="arrow">←</span>Home</a>
+	
+	<a href='https://lunaticf.github.io/posts'>Archive</a>
+	<a href='https://lunaticf.github.io/tags'>Tags</a>
+	<a href='https://lunaticf.github.io/about'>About</a>
+
+	
+</nav>
+
+
+        <section id="wrapper" class="post">
+            <article>
+                <header>
+                    <h1>
+                        Lock and Optimization
+                    </h1>
+                    <h2 class="headline">
+                    Jan 18, 2020 15:36
+                    · 2999 words
+                    · 6 minute read
+                      <span class="tags">
+                      
+                      
+                          
+                              <a href="https://lunaticf.github.io/tags/java">java</a>
+                          
+                              <a href="https://lunaticf.github.io/tags/concurrent">concurrent</a>
+                          
+                      
+                      
+                      </span>
+                    </h2>
+                </header>
+                
+                <section id="post-body">
+                    
+
+<blockquote>
+<p><font face="STCAIYUN">最是夜初群籁寂，临轩坐拥一湖星
+ &mdash; 雍正</font></p>
+</blockquote>
+
+<p>锁是最常用的解决并发的手段，而高并发的环境下，频繁的竞争锁会使得程序性能急剧下降，所以有很多方式来优化，比如避免死锁、减小锁的粒度和锁分离等方式。</p>
+
+<h3 id="使用锁">使用锁</h3>
+
+<p>锁虽好，可不要贪杯。合理的使用锁可以帮助我们写出性能更加优越的程序。</p>
+
+<h4 id="减小锁持有的时间">减小锁持有的时间</h4>
+
+<p>显然我们应该让线程尽量减少持有锁的时间，等价于只有在绝对必要的时候才持锁。就比如我们通常使用的双重检查的单例模式，如果直接在整个方法上加上Synchronized，那样性能太低了。
+比如JDK中，Pattern的matcher方法尽量只局部加锁：</p>
+
+<pre><code class="language-java">public Matcher matcher(CharSequence input) {
+    // check this Pattern is compiled
+    // 经典的double check
+    if (!compiled) {
+        synchronized(this) {
+            if (!compiled)
+                compile();
+        }
+    }
+    Matcher m = new Matcher(this, input);
+    return m;
+}
+</code></pre>
+
+<h4 id="减小锁粒度">减小锁粒度</h4>
+
+<p>减小锁的粒度也是一种有效的手段，比如ConcurrentHashMap类的实现，这里说的是1.7，1.8有很大的不同。
+如果我们想要一个线程安全的对象，可能自然的想法就是对整个HashMap加锁，但是这样加锁粒度就太大了。</p>
+
+<p>所以ConcurrentHashMap内部分成了16个段，首先根据hashcode计算在哪个段，然后对该段加锁。
+所以ConcurrentHashMap最多可以同时接受16个线程同时操作，提升了吞吐量。</p>
+
+<p>但是ConcurrentHashMap的某些方法其实需要同时取得所有段的锁，比如size()方法，先尝试无锁的方式求和，
+失败才会尝试加锁的方法。但是如果使用全部加锁，可想而知比HashMap就会效率低很多，也就是说访问全局信息的方法调用不频繁时，我们的减小锁粒度的容器性能才比较好，所以又是Trade off。</p>
+
+<h4 id="读写分离锁">读写分离锁</h4>
+
+<p>通常很多情况下读多写少，因为大部分情况下是并发读，读操作本身不会影响数据的完整性和一致性，可以很好地提升性能。</p>
+
+<h4 id="锁分离">锁分离</h4>
+
+<p>如果进一步延伸读写锁的思想，就是锁分离。其实就是根据操作的分类，设定不同类别的锁。
+比如，LinkedBlockingQueue的实现中，take和put分别是从头部取和从尾部添加元素，
+如果使用独占锁，两个方法就不能并发执行，而这两个操作其实是不冲突的。</p>
+
+<pre><code class="language-java">/** Lock held by take, poll, etc */
+private final ReentrantLock takeLock = new ReentrantLock();
+
+/** Wait queue for waiting takes */
+private final Condition notEmpty = takeLock.newCondition();
+
+/** Lock held by put, offer, etc */
+private final ReentrantLock putLock = new ReentrantLock();
+
+/** Wait queue for waiting puts */
+private final Condition notFull = putLock.newCondition();
+</code></pre>
+
+<p>可以看到，我们有两把不同的锁，一个用于take，一个用于put。</p>
+
+<pre><code class="language-java">public E take() throws InterruptedException {
+    E x;
+    int c = -1;
+    final AtomicInteger count = this.count;
+    final ReentrantLock takeLock = this.takeLock;
+    // 尝试获取锁
+    takeLock.lockInterruptibly();
+    try {
+        // 当前没有可用的数据 在takeLock的condition notEmpty上等待
+        while (count.get() == 0) {
+            notEmpty.await();
+        }
+        // 有数据了 取出
+        x = dequeue();
+        // CAS的方式将当前队列元素-1 因为还有put方法会修改count
+        c = count.getAndDecrement();
+        // 如果还有元素 通知其他等待的线程执行take()
+        if (c &gt; 1)
+            notEmpty.signal();
+    } finally {
+        // 释放锁
+        takeLock.unlock();
+    }
+    // 如果c==capacity 说明刚刚是满的 可以通知线程来put
+    if (c == capacity)
+        signalNotFull();
+    return x;
+}
+</code></pre>
+
+<p>Put方法大同小异。LinkedBlockingQueue通过两把锁实现了取数据和写数据的分离。</p>
+
+<h4 id="锁粗化">锁粗化</h4>
+
+<p>虚拟机在遇到一连串请求和释放的操作时，会把请求都整合成一次，减少对锁的申请，这就叫锁的粗化。</p>
+
+<pre><code class="language-java">for (int i = 0; i &lt; CIRCLE; i++) {
+    synchronized(lock) {
+        // do something
+    }
+}
+
+// 合理的做法
+synchronized(lock) {
+    for (int i = 0; i &lt; CIRCLE; i++) {
+        // do something
+    }
+}
+</code></pre>
+
+<p>一句话总结，没有免费的午餐定理，具体问题具体考虑使用何种优化。</p>
+
+<h3 id="jvm的努力">JVM的努力</h3>
+
+<p>JDK 1.6 引入了偏向锁和轻量级锁，从而让锁拥有了四个状态：无锁状态（unlocked）、偏向锁状态（biasble）、轻量级锁状态（lightweight locked）和重量级锁状态（inflated）。</p>
+
+<p>首先简单说下先偏向锁、轻量级锁、重量级锁三者各自的应用场景：</p>
+
+<ul>
+<li>偏向锁：只有一个线程进入临界区；</li>
+<li>轻量级锁：多个线程交替进入临界区；</li>
+<li>重量级锁：多个线程同时进入临界区。</li>
+</ul>
+
+<p>偏向锁，轻量级锁都是乐观锁，重量级锁是悲观锁。</p>
+
+<p>一个对象刚开始实例化的时候，没有任何线程来访问它的时候。它是可偏向的，意味着，它现在认为只可能有一个线程来访问它，所以当第一个线程来访问它的时候，它会偏向这个线程，此时，对象持有偏向锁，偏向第一个线程，这个线程在修改对象头成为偏向锁的时候使用CAS操作，并将对象头中的ThreadID改成自己的ID，之后再次访问这个对象时，只需要对比ID，不需要再使用CAS在进行操作。</p>
+
+<p>一旦有第二个线程访问这个对象，因为偏向锁不会主动释放，所以第二个线程可以看到对象是偏向的状态，这时表明在这个对象上已经存在竞争了，检查原来持有该对象锁的线程是否依然存活。</p>
+
+<p>如果挂了，则可以将对象变为无锁状态，然后重新偏向新的线程，如果原来的线程依然存活，则马上执行那个线程的操作栈，检查该对象的使用情况，如果仍然需要持有偏向锁，则偏向锁升级为轻量级锁。</p>
+
+<p>锁膨胀后，为了尽量避免线程真的在操作系统层面挂起，虚拟机会让当前线程做几个空循环，也就是自旋。
+如果害得不到锁，线程就真的挂起。</p>
+
+<h4 id="锁消除">锁消除</h4>
+
+<p>JVM通过扫描来消除不可能存在共享资源竞争的锁，其实这是由于我们可能不经意间使用了一些加锁的工具类，
+比如可能我们在一个不存在并发的场合使用Vector，而Vector内部是使用同步锁的。</p>
+
+<p>锁消除涉及的技术为逃逸分析，观察一个变量是否会逃出某个作用域，如果没逃出，就可以大胆的将其内部加锁操作消除。</p>
+
+<h3 id="无锁">无锁</h3>
+
+<p>锁是一种悲观的策略，假设总是会发生冲突，所以小心翼翼。
+无锁的策略假设当前是没有冲突的，如果有冲突，就重试到没有冲突为止。</p>
+
+<h4 id="cas">CAS</h4>
+
+<p>使用无锁没有锁竞争带来的系统开销，也没有线程间堵塞然后切换的开销，所以性能更好</p>
+
+<p>CAS(V,E,N)</p>
+
+<ul>
+<li>V表示要更新的变量</li>
+<li>E表示预期值</li>
+<li>N表示新值</li>
+</ul>
+
+<p>只有当V值等于E值时，才将V的值设为N。如果不同，说明已经有其他线程进行了更新，则当前线程什么都不做，
+所以叫CompareAndSet。</p>
+
+<p>当前大部分现代CPU都支持原子化的CAS指令，现在CAS在JVM中可以说是无处不在。</p>
+
+<h4 id="atomicinteger">AtomicInteger</h4>
+
+<p>为了让我们好用，JDK并发包提供了atomic包，实现了很多直接使用CAS操作的线程安全的类型。
+比如最常用的AtomicInteger，其实我们就可以把它当成一个int，但是他是线程安全的，并且是可变的。
+1.7中incremnetAndGet()实现如下：</p>
+
+<pre><code class="language-java">public final int incrementAndGet() {
+    // 不断尝试
+    for (;;) {
+        // 去的最新的值 期望值
+        int current = get();
+        int next = current + 1;
+        // 可能返回失败 进行下一次重试
+        if (compareAndSet(current, next)) {
+            return next;
+        }
+    }
+}
+</code></pre>
+
+<h4 id="atomicreference和aba">AtomicReference和ABA</h4>
+
+<p>与上面类似，AtomicReference是对普通对象的引用。
+保证了修改对象引用时的线程安全性。</p>
+
+<p>但是如果一个变量初次读取的时候是 A 值，它的值被改成了 B，后来又被改回为 A，那 CAS 操作就会误认为它从来没有被改变过，这种问题叫ABA问题。</p>
+
+<p>大部分情况下 ABA 问题不会影响程序并发的正确性，如果需要解决 ABA 问题，改用传统的互斥同步可能会比原子类更高效。J.U.C 包提供了一个带有标记的原子引用类 AtomicStampedReference 来解决这个问题，它可以通过控制变量值的版本来保证 CAS 的正确性。</p>
+
+<p>这里有一个疑问，本身对象引用的赋值就是原子的，为什么还需要AtomicReference？并且我们可以看到其实AtomicReference的set方法也是直接赋值。</p>
+
+<blockquote>
+<p>You need it when the decision on which the creation of the new value is based can depend on the previous value of the reference. For instance when implementing some LinkedList like data structure you wan&rsquo;t to set the head to a new node which refers to the previous node. In the time between reading the previous node and setting head to the new one some other thread could have concurrently updated the head reference&rsquo;s value. If our thread would not be aware of this change, it would go lost.</p>
+</blockquote>
+
+<p>解决ABA问题可以使用AtomicReference，记录状态信息即可，维护一个时间戳()实际上一个整数就行。</p>
+
+<h3 id="参考">参考：</h3>
+
+<ul>
+<li>《实战Java高并发程序设计》</li>
+<li><a href="https://www.zhihu.com/question/53826114">https://www.zhihu.com/question/53826114</a></li>
+<li><a href="https://stackoverflow.com/questions/15196355/reference-assignment-is-atomic-so-why-use-atomicreference">https://stackoverflow.com/questions/15196355/reference-assignment-is-atomic-so-why-use-atomicreference</a></li>
+</ul>
+
+                </section>
+            </article>
+
+            
+
+            
+                <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'https-lunaticf-github-io'; 
+
+     
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+            
+
+            
+
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.github.com/Lunaticf">
+        <i class="fa fa-github-square"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+       © Copyright 2020 <i class="fa fa-heart" aria-hidden="true"></i> Lunaticf
+    
+    </p>
+    <script src="https://lunaticf.github.io/live2d/autoload.js"></script>
+</footer>
+
+        </section>
+
+        <script src="https://lunaticf.github.io/js/jquery-3.3.1.min.js"></script>
+<script src="https://lunaticf.github.io/js/main.js"></script>
+<script src="https://lunaticf.github.io/js/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'your_google_analytics_id', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+
+
+
+    </body>
+</html>

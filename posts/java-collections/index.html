@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		 
+			
+  
+    <meta name="twitter:card" content="summary"/>
+    
+      <meta name="twitter:image" content="https://lunaticf.github.io/images/avatar.png" />
+    
+  
+  
+  <meta name="twitter:title" content="Java Collection"/>
+  <meta name="twitter:description" content="满洞苔钱，买断风烟。笑桃花流落晴川。石楼高处，夜夜啼猿，看二更云、三更月、四更天。细草如毡，独枕空拳。与山麋、野鹿同眠。残霞未散，淡雾沉绵。"/>
+  
+  
+  
+  
+    <meta name="twitter:creator" content="@Lunaticf"/>
+  
+
+
+
+		
+		<meta name="author" content="Lunaticf">
+		<meta name="description" content="添忧杂货铺">
+		<meta name="generator" content="Hugo 0.55.6" />
+		<title>Java Collection &middot; 添忧杂货铺</title>
+		<link rel="shortcut icon" href="https://lunaticf.github.io/images/favicon.ico">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/style.css">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/highlight.css">
+
+		
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/font-awesome.min.css">
+		
+
+		
+		<link href="https://lunaticf.github.io/index.xml" rel="alternate" type="application/rss+xml" title="添忧杂货铺" />
+		
+
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='https://lunaticf.github.io/'> <span class="arrow">←</span>Home</a>
+	
+	<a href='https://lunaticf.github.io/posts'>Archive</a>
+	<a href='https://lunaticf.github.io/tags'>Tags</a>
+	<a href='https://lunaticf.github.io/about'>About</a>
+
+	
+</nav>
+
+
+        <section id="wrapper" class="post">
+            <article>
+                <header>
+                    <h1>
+                        Java Collection
+                    </h1>
+                    <h2 class="headline">
+                    Jan 30, 2020 11:59
+                    · 4584 words
+                    · 10 minute read
+                      <span class="tags">
+                      
+                      
+                          
+                              <a href="https://lunaticf.github.io/tags/java">Java</a>
+                          
+                      
+                      
+                      </span>
+                    </h2>
+                </header>
+                
+                <section id="post-body">
+                    
+
+<blockquote>
+<p><font face="STCAIYUN">满洞苔钱，买断风烟。笑桃花流落晴川。石楼高处，夜夜啼猿，看二更云、三更月、四更天。细草如毡，独枕空拳。与山麋、野鹿同眠。残霞未散，淡雾沉绵。是晋时人、唐时洞、汉时仙。&mdash;&ndash; 葛长庚</font></p>
+</blockquote>
+
+<p>下面来自 Collection 的官方描述，</p>
+
+<blockquote>
+<p>A collection — sometimes called a container — is simply an object that groups multiple elements into a single unit. Collections are used to store, retrieve, manipulate, and communicate aggregate data. Typically, they represent data items that form a natural group, such as a poker hand (a collection of cards), a mail folder (a collection of letters), or a telephone directory (a mapping of names to phone numbers).</p>
+</blockquote>
+
+<p>随后其列出了核心接口，Map 也在其中，虽然 Map 作为一个单独的体系没有 implement the Collection interface，但是确实概念上是 Collection，这里说明一下，也就是有他自己的 interface hierarchy。</p>
+
+<ul>
+<li>Collection - the root of the collection hierarchy.</li>
+<li>Set — a collection that cannot contain duplicate elements.</li>
+<li>List — an ordered collection (sometimes called a sequence).</li>
+<li>Queue — a collection used to hold multiple elements prior to processing.</li>
+<li>Map — an object that maps keys to values.</li>
+</ul>
+
+<p>那么让我们来深入源码把~ 源码面前，了无秘密。</p>
+
+<h2 id="collection的设计模式">Collection的设计模式</h2>
+
+<h3 id="迭代器模式">迭代器模式</h3>
+
+<pre><code>public interface Collection&lt;E&gt; extends Iterable&lt;E&gt; {
+    // Query Operations
+}
+</code></pre>
+
+<p>Collection 继承了 Iterable 接口，能够获取 Iterator 对象遍历集合中的元素。
+如果一个对象实现了 Iterable 接口，JDK 1.5 之后能够通过 for each 语法来遍历该对象。</p>
+
+<pre><code class="language-java">List&lt;String&gt; list = new ArrayList&lt;&gt;();
+list.add(&quot;a&quot;);
+list.add(&quot;b&quot;);
+for (String item : list) {
+    System.out.println(item);
+}
+</code></pre>
+
+<h3 id="适配器模式">适配器模式</h3>
+
+<p>Arrays.asList()就是适配器模式的实现，可以将数组转换为 List。</p>
+
+<pre><code class="language-java">// This method acts as bridge between array-based and collection-based APIs
+@SafeVarargs
+@SuppressWarnings(&quot;varargs&quot;)
+public static &lt;T&gt; List&lt;T&gt; asList(T... a) {
+    return new ArrayList&lt;&gt;(a);
+}
+</code></pre>
+
+<p>实际上我们进入这个构造函数会发现，使用的并不是我们常用的 ArrayList，而是 Arrays的一个内部类，这个类继承了 AbstractList，而没有重新实现 add、 remove等方法，所以我们如果对其调用这些方法，会抛出UnsupportedOperationException，这个异常实际上是 AbstractList 抛出的。</p>
+
+<pre><code class="language-java">// 虚假的ArrayList
+private static class ArrayList&lt;E&gt; extends AbstractList&lt;E&gt;
+    implements RandomAccess, java.io.Serializable
+{        private final E[] a;
+
+    ArrayList(E[] array) {
+        a = Objects.requireNonNull(array);
+    }
+}
+
+// AbstractList的add方法
+public void add(int index, E element) {
+    throw new UnsupportedOperationException();
+}
+</code></pre>
+
+<p>至此我们知道，其实Arrays.asList只是帮我们做了一个转换，让我们能够使用List的接口，并没有实际转换为真正的 ArrayList，这也是适配器模式的体现。但是有些说法说不能改变这个对象是错误的，可以用 set 方法改变内部数组的值，说到底就是一个fixed size 的 List 。</p>
+
+<p>这里顺带提一下泛型的 tips :</p>
+
+<pre><code class="language-java">// Integer -&gt; T
+Integer[] data = {1,2,3};
+List&lt;Integer&gt; integers = Arrays.asList(data);
+
+// 因为int是基本类型，不能转化为泛型，所以int[] -&gt; T
+int[] data = {1,2,3};
+List&lt;int[]&gt; integers = Arrays.asList(data);
+</code></pre>
+
+<h2 id="arraylist">ArrayList</h2>
+
+<pre><code class="language-java">public class ArrayList&lt;E&gt; extends AbstractList&lt;E&gt;
+        implements List&lt;E&gt;, RandomAccess, Cloneable, java.io.Serializable
+{
+    /**
+     * Default initial capacity.
+     */
+    private static final int DEFAULT_CAPACITY = 10;
+}
+</code></pre>
+
+<p>可以看到，ArrayList 默认大小为10。</p>
+
+<p>ArrayList 扩容相关操作如下，</p>
+
+<pre><code class="language-java">public boolean add(E e) {
+    // 保证容量足够 要保证最小的容量为size + 1
+    ensureCapacityInternal(size + 1);  
+    elementData[size++] = e;
+    return true;
+}
+
+// 用来指示第一次加入元素 所以其实ArrayList一开始是空的
+private static final Object[] DEFAULTCAPACITY_EMPTY_ELEMENTDATA = {};
+
+private void ensureCapacityInternal(int minCapacity) {
+    // 如果现在还是空的呢
+    if (elementData == DEFAULTCAPACITY_EMPTY_ELEMENTDATA) {
+        // 如果需要的容量比10还小，就扩容成10
+        minCapacity = Math.max(DEFAULT_CAPACITY, minCapacity);
+    }
+    ensureExplicitCapacity(minCapacity);
+}
+
+// 再次封装一下
+private void ensureExplicitCapacity(int minCapacity) {
+    modCount++;
+    // overflow-conscious code
+    // 防止溢出 
+    if (minCapacity - elementData.length &gt; 0)
+        grow(minCapacity);
+}
+
+// 这里可以聊聊Java数组最大长度能开多少
+// 1. 规范隐含的限制，数组的length必须是非负int，所以最大就是Integer.MAX_VALUE 2^31-1
+// 2. 具体VM实现的限制，数组头部会有uint32_t代表数组大小(byte) 所以实际数组最大长度为(uint32_t最大值 - 对象头的大小) / 数组元素大小
+// - 8 是为了给对象头留出空间 只是一个估计的数字
+private static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE - 8;
+
+// 真正的扩容方法
+private void grow(int minCapacity) {
+    // overflow-conscious code
+    int oldCapacity = elementData.length;
+    // 这里我们看到重点 扩容1.5倍
+    int newCapacity = oldCapacity + (oldCapacity &gt;&gt; 1);
+    // 检查是否溢出
+    if (newCapacity - minCapacity &lt; 0)
+        newCapacity = minCapacity;
+    // 如果比最大限制还要大
+    if (newCapacity - MAX_ARRAY_SIZE &gt; 0)
+        newCapacity = hugeCapacity(minCapacity);
+    // minCapacity is usually close to size, so this is a win:
+    elementData = Arrays.copyOf(elementData, newCapacity);
+}
+
+private static int hugeCapacity(int minCapacity) {
+    if (minCapacity &lt; 0) // overflow
+        throw new OutOfMemoryError();
+    // 可以看到如果超出了MAX_ARRAY_SIZE，还是会尝试分配Integer.MAX_VALUE大小的数组
+    // 可能在某些VM上会成功，某些失败
+    return (minCapacity &gt; MAX_ARRAY_SIZE) ?
+        Integer.MAX_VALUE :
+        MAX_ARRAY_SIZE;
+}
+</code></pre>
+
+<p>可以参考 Stackoverflow 上一个回答，
+<a href="https://stackoverflow.com/questions/35582809/java-8-arraylist-hugecapacityint-implementation。">https://stackoverflow.com/questions/35582809/java-8-arraylist-hugecapacityint-implementation。</a></p>
+
+<ul>
+<li>ArrayList 初始化为空，第一次添加元素时会变成10，为了避免频繁 copy，我们应该定义初始容量。</li>
+<li>ArrayList每次扩容1.5倍。</li>
+<li>ArrayList最大能分配多少个元素？Integer.MAX_VALUE 2^31-1</li>
+<li>保存元素的数组 elementData 使用 transient 修饰，该关键字声明数组默认不会被序列化，因为底层数组不是满的。ArrayList 实现了 writeObject() 和 readObject() 来控制只序列化数组中有元素填充那部分内容。ObjectOutputStream 会用反射查找该对象是否有 writeobject() 方法。</li>
+<li>modCount 用来记录 ArrayList 结构发生变化的次数。结构发生变化是指添加或者删除至少一个元素的所有操作，或者是调整内部数组的大小，仅仅只是设置元素的值不算结构发生变化。</li>
+<li>遍历的时候能否删除?<a href="https://segmentfault.com/q/1010000018562082">https://segmentfault.com/q/1010000018562082</a></li>
+</ul>
+
+<h2 id="vector">Vector</h2>
+
+<p>与ArrayList相似，使用 synchronized 进行同步。
+注意，Vector 复合操作依然不是线程安全的。</p>
+
+<pre><code class="language-java">if (!vector.contains(element)) {
+    // 释放锁后如果别的线程添加元素，继续执行就会基于错误的假设
+    vector.add(element); 
+    ...
+}
+</code></pre>
+
+<ul>
+<li>Vector 可以设置扩容的大小，默认是两倍，ArrayList 1.5倍。</li>
+<li>Vector 虽然方法是同步的，性能较低，同步操作完全可以在我们的应用层控制，最好使用 ArrayList。</li>
+</ul>
+
+<p>那么我们如何保证线程安全呢，可以使用 Collections.synchronizedList 得到一个线程安全的 List，</p>
+
+<pre><code class="language-java">List&lt;String&gt; list = new ArrayList&lt;&gt;();
+List&lt;String&gt; synList = Collections.synchronizedList(list);
+
+// 或者使用CopyOnWriteArrayList
+List&lt;String&gt; list = new CopyOnWriteArrayList&lt;&gt;();
+</code></pre>
+
+<h2 id="copyonwritearraylist">CopyOnWriteArrayList</h2>
+
+<h3 id="读写分离">读写分离</h3>
+
+<p>写操作会复制一个数组，读操作都在原数组上进行，互不影响，能够提高性能，Vector读也是加锁的。
+写操作是加锁的，不会有多个线程同时写。</p>
+
+<p>写操作结束后会把新数组赋值给原数组。</p>
+
+<pre><code class="language-java">public boolean add(E e) {
+    // 可重入锁
+    final ReentrantLock lock = this.lock;
+    lock.lock();
+    try {
+        // 原数组
+        Object[] elements = getArray();
+        int len = elements.length;
+        // 新数组
+        Object[] newElements = Arrays.copyOf(elements, len + 1);
+        newElements[len] = e;
+  
+        setArray(newElements);
+        return true;
+    } finally {
+        lock.unlock();
+    }
+}
+
+final void setArray(Object[] a) {
+    array = a;
+}
+</code></pre>
+
+<h2 id="linkedlist">LinkedList</h2>
+
+<p>双向链表，比较简单，内部定义了头指针和尾指针。</p>
+
+<pre><code class="language-java">transient Node&lt;E&gt; first;
+transient Node&lt;E&gt; last;
+</code></pre>
+
+<ul>
+<li>ArrayList 插入删除操作 O(N) 查询O(1)</li>
+<li>LinkedList 插入删除操作 O(1) 查询O(N)</li>
+</ul>
+
+<pre><code class="language-java">public class ArrayList&lt;E&gt; extends AbstractList&lt;E&gt;
+        implements List&lt;E&gt;, RandomAccess, Cloneable, java.io.Serializable
+{}
+
+// LinkedList没有实现RandomAccess接口
+public class LinkedList&lt;E&gt;
+    extends AbstractSequentialList&lt;E&gt;
+    implements List&lt;E&gt;, Deque&lt;E&gt;, Cloneable, java.io.Serializable
+{
+</code></pre>
+
+<h2 id="hashmap">HashMap</h2>
+
+<p>为了便于阅读，下面源码以1.7为主，会提到1.8的改进。</p>
+
+<p>HashMap使用拉链法来解决冲突，hashcode相同的再用equals判断，并且采用头插法。</p>
+
+<pre><code class="language-java">// node表示
+static class Entry&lt;K,V&gt; implements Map.Entry&lt;K,V&gt; {
+    final K key;
+    V value;
+    Entry&lt;K,V&gt; next;
+    int hash;
+}
+
+transient Entry[] table;
+</code></pre>
+
+<h3 id="put操作">put操作</h3>
+
+<p>HashMap允许放为null的键，</p>
+
+<pre><code class="language-java">public V put(K key, V value) {
+    if (table == EMPTY_TABLE) {
+        inflateTable(threshold);
+    }
+    // 键为 null 单独处理
+    if (key == null)
+        return putForNullKey(value);
+
+    // 计算Hashcode 计算桶下标
+    int hash = hash(key);
+    int i = indexFor(hash, table.length);
+
+    // 搜寻链表 看有没有该key完全相同的node
+    for (Entry&lt;K,V&gt; e = table[i]; e != null; e = e.next) {
+        Object k;
+        if (e.hash == hash &amp;&amp; ((k = e.key) == key || key.equals(k))) {
+            V oldValue = e.value;
+            e.value = value;
+            e.recordAccess(this);
+            return oldValue;
+        }
+    }
+
+    // 如果是结构性改变 新增键值对
+    modCount++;
+
+    // 插入新键值对
+    addEntry(hash, key, value, i);
+    return null;
+}
+</code></pre>
+
+<p>因为null没有hashcode，所以不能计算放在哪个桶，所以特意拿第0个桶存放。</p>
+
+<pre><code class="language-java">private V putForNullKey(V value) {
+    for (Entry&lt;K,V&gt; e = table[0]; e != null; e = e.next) {
+        if (e.key == null) {
+            V oldValue = e.value;
+            e.value = value;
+            e.recordAccess(this);
+            return oldValue;
+        }
+    }
+    modCount++;
+    addEntry(0, null, value, 0);
+    return null;
+}
+</code></pre>
+
+<p>头插法代码</p>
+
+<pre><code class="language-java">// 核心方法 添加键值对 
+void addEntry(int hash, K key, V value, int bucketIndex) {
+    // 可能需要resize
+    if ((size &gt;= threshold) &amp;&amp; (null != table[bucketIndex])) {
+        resize(2 * table.length);
+        hash = (null != key) ? hash(key) : 0;
+        bucketIndex = indexFor(hash, table.length);
+    }
+
+    createEntry(hash, key, value, bucketIndex);
+}
+
+// indexFor很巧，计算桶下标
+// 如果能保证capacity为2的n次方，就可以用 h &amp; (n - 1) 来取余 
+// 性能更好
+static int indexFor(int h, int length) {
+    return h &amp; (length-1);
+}
+
+void createEntry(int hash, K key, V value, int bucketIndex) {
+    Entry&lt;K,V&gt; e = table[bucketIndex];
+    // 头插法，链表头部指向新的键值对
+    table[bucketIndex] = new Entry&lt;&gt;(hash, key, value, e);
+    size++;
+}
+</code></pre>
+
+<h3 id="扩容">扩容</h3>
+
+<p>设 HashMap 的 table 长度为 M，需要存储的键值对数量为 N，如果哈希函数满足均匀性的要求，那么每条链表的长度大约为 N/M，因此查找的复杂度为 O(N/M)。</p>
+
+<p>所以我们需要 N/M 尽可能小，由于 N 我们不能控制，所以要让 M 尽可能大。
+HashMap采用动态扩容来提高效率，</p>
+
+<ul>
+<li>capacity      table 的容量大小，默认为 16。需要注意的是 capacity 必须保证为 2 的 n 次方。</li>
+<li>size          键值对数量。</li>
+<li>threshold     size 的临界值，当 size 大于等于 threshold 就必须进行扩容操作。</li>
+<li>loadFactor    装载因子，table 能够使用的比例，threshold = (int)(capacity * loadFactor)。</li>
+</ul>
+
+<p>那么我们想，扩容后肯定要重新计算所有的键值对的位置，重新插入，这一步很耗时。</p>
+
+<p>HashMap 构造函数允许用户传入的容量不是 2 的 n 次方，因为它可以自动地将传入的容量转换为 2 的 n 次方。</p>
+
+<pre><code class="language-java">/**
+ * Returns a power of two size for the given target capacity.
+ */
+static final int tableSizeFor(int cap) {
+    // 让cap-1再赋值给n的目的是另找到的目标值大于或等于原值。
+    // 比如 8 不能返回16
+    int n = cap - 1;
+    n |= n &gt;&gt;&gt; 1;
+    n |= n &gt;&gt;&gt; 2;
+    n |= n &gt;&gt;&gt; 4;
+    n |= n &gt;&gt;&gt; 8;
+    n |= n &gt;&gt;&gt; 16;
+
+    return (n &lt; 0) ? 1 : (n &gt;= MAXIMUM_CAPACITY) ? MAXIMUM_CAPACITY : n + 1;
+}
+</code></pre>
+
+<h3 id="1-8-红黑树">1.8 红黑树</h3>
+
+<p>从 JDK 1.8 开始，一个桶存储的链表长度大于等于 8 时会将链表转换为红黑树。</p>
+
+<h3 id="与hashtable比较">与HashTable比较</h3>
+
+<ul>
+<li>Hashtable 使用 synchronized 来进行同步。</li>
+<li>HashMap 可以插入键为 null 的 Entry。</li>
+<li>HashMap 的迭代器是 fail-fast 迭代器。</li>
+<li>HashMap 不能保证随着时间的推移 Map 中的元素次序是不变的。</li>
+</ul>
+
+<h2 id="concurrenthashmap">ConcurrentHashMap</h2>
+
+<p>ConcurrentHashMap 和 HashMap 实现上类似，最主要的差别是 ConcurrentHashMap 采用了分段锁（Segment），每个分段锁维护着几个桶（HashEntry），多个线程可以同时访问不同分段锁上的桶，从而使其并发度更高（并发度就是 Segment 的个数）。Segment 继承自 ReentrantLock。</p>
+
+<pre><code class="language-java">
+final Segment&lt;K,V&gt;[] segments;
+
+// 默认是16个段
+static final int DEFAULT_CONCURRENCY_LEVEL = 16;
+
+static final class Segment&lt;K,V&gt; extends ReentrantLock implements Serializable {
+
+    private static final long serialVersionUID = 2249069246763182397L;
+
+    static final int MAX_SCAN_RETRIES =
+        Runtime.getRuntime().availableProcessors() &gt; 1 ? 64 : 1;
+
+    transient volatile HashEntry&lt;K,V&gt;[] table;
+
+    // 每个segment中有count统计该分段键值对个数
+    transient int count;
+
+    transient int modCount;
+
+    transient int threshold;
+
+    final float loadFactor;
+}
+
+</code></pre>
+
+<p>在执行 size 操作时，需要遍历所有 Segment 然后把 count 累计起来。</p>
+
+<p>ConcurrentHashMap 在执行 size 操作时先尝试不加锁，如果连续两次不加锁操作得到的结果一致，那么可以认为这个结果是正确的。</p>
+
+<p>尝试次数使用 RETRIES_BEFORE_LOCK 定义，该值为 2，retries 初始值为 -1，因此尝试次数为 3。</p>
+
+<p>如果尝试的次数超过 3 次，就需要对每个 Segment 加锁。</p>
+
+<p>JDK 1.7 使用分段锁机制来实现并发更新操作，核心类为 Segment，它继承自重入锁 ReentrantLock，并发度与 Segment 数量相等。</p>
+
+<p>JDK 1.8 使用了 CAS 操作来支持更高的并发度，在 CAS 操作失败时使用内置锁 synchronized。</p>
+
+<p>并且 JDK 1.8 的实现也在链表过长时会转换为红黑树。</p>
+
+<h2 id="linkedhashmap">LinkedHashMap</h2>
+
+<p>LinkedHashMap可以维护插入顺序，其实就是类似LRU Cache，哈希表和双向链表的组合，既能够保证快速查找，
+又能够保证高效的插入和删除，维护顺序。</p>
+
+<pre><code class="language-java">public class LinkedHashMap&lt;K,V&gt; extends HashMap&lt;K,V&gt; implements Map&lt;K,V&gt;
+
+/**
+ * The head (eldest) of the doubly linked list.
+ */
+transient LinkedHashMap.Entry&lt;K,V&gt; head;
+
+/**
+ * The tail (youngest) of the doubly linked list.
+ */
+transient LinkedHashMap.Entry&lt;K,V&gt; tail;
+
+// 默认插入顺序 可以使用LRU
+final boolean accessOrder;
+
+</code></pre>
+
+<p>利用LinkedHashMap可以很方便实现LRU Cache</p>
+
+<pre><code class="language-java">class LRUCache&lt;K, V&gt; extends LinkedHashMap&lt;K, V&gt; {
+    private static final int MAX_ENTRIES = 3;
+
+    // 重写该方法
+    protected boolean removeEldestEntry(Map.Entry eldest) {
+        return size() &gt; MAX_ENTRIES;
+    }
+
+    LRUCache() {
+        super(MAX_ENTRIES, 0.75f, true);
+    }
+}
+</code></pre>
+
+<h2 id="weakhashmap">WeakHashMap</h2>
+
+<p>WeakHashMap 的 Entry 继承自 WeakReference，被 WeakReference 关联的对象在下一次垃圾回收时会被回收，如果没有强引用的话。ThreadLocal 就通过弱引用来解决内存泄漏的问题，ThreadLocalMap-&gt;entry-&gt;key的引用是弱引用。</p>
+
+<ul>
+<li>强引用 普通引用</li>
+<li>软引用 SoftReference 如果 JVM 内存不足 会释放掉软引用</li>
+<li>弱引用 WeakReference 只要 gc 启动 就会回收</li>
+<li>虚引用 这个比较特殊，可以用来实现类似 Object.finalize 功能</li>
+</ul>
+
+<p>WeakHashMap 主要用来实现缓存，通过使用 WeakHashMap 来引用缓存对象，由 JVM 对这部分缓存进行回收。</p>
+
+<p>Tomcat 中的 ConcurrentCache 使用了 WeakHashMap 来实现缓存功能。</p>
+
+<pre><code class="language-java">// 使用分代缓存
+public final class ConcurrentCache&lt;K, V&gt; {
+
+    private final int size;
+
+    private final Map&lt;K, V&gt; eden;
+
+    private final Map&lt;K, V&gt; longterm;
+
+    public ConcurrentCache(int size) {
+        this.size = size;
+        // 经常使用的对象放到伊甸园中，持久缓存
+        this.eden = new ConcurrentHashMap&lt;&gt;(size);
+        // 不常用的对象放进longterm gc会被回收
+        this.longterm = new WeakHashMap&lt;&gt;(size);
+    }
+
+    public V get(K k) {
+        // 先从伊甸园获取 没有再访问longterm 并且放到eden
+        V v = this.eden.get(k);
+        if (v == null) {
+            v = this.longterm.get(k);
+            if (v != null)
+                this.eden.put(k, v);
+        }
+        return v;
+    }
+
+
+    public void put(K k, V v) {
+        // 如果eden满了，把eden所有对象都放到longterm中，利用虚拟机回收
+        if (this.eden.size() &gt;= size) {
+            this.longterm.putAll(this.eden);
+            this.eden.clear();
+        }
+        this.eden.put(k, v);
+    }
+}
+</code></pre>
+
+                </section>
+            </article>
+
+            
+
+            
+                <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'https-lunaticf-github-io'; 
+
+     
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+            
+
+            
+
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.github.com/Lunaticf">
+        <i class="fa fa-github-square"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+       © Copyright 2020 <i class="fa fa-heart" aria-hidden="true"></i> Lunaticf
+    
+    </p>
+    <script src="https://lunaticf.github.io/live2d/autoload.js"></script>
+</footer>
+
+        </section>
+
+        <script src="https://lunaticf.github.io/js/jquery-3.3.1.min.js"></script>
+<script src="https://lunaticf.github.io/js/main.js"></script>
+<script src="https://lunaticf.github.io/js/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'your_google_analytics_id', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+
+
+
+    </body>
+</html>

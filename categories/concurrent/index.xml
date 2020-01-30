@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>concurrent on 添忧杂货铺</title>
+    <link>https://lunaticf.github.io/categories/concurrent/</link>
+    <description>Recent content in concurrent on 添忧杂货铺</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Sat, 18 Jan 2020 15:36:30 +0800</lastBuildDate>
+    
+	<atom:link href="https://lunaticf.github.io/categories/concurrent/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Lock and Optimization</title>
+      <link>https://lunaticf.github.io/posts/lock-and-optimization/</link>
+      <pubDate>Sat, 18 Jan 2020 15:36:30 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/posts/lock-and-optimization/</guid>
+      <description>最是夜初群籁寂，临轩坐拥一湖星 &amp;mdash; 雍正 锁是最常用的解决并发的手段，而高并发的环境下，频繁的竞争锁会使得程序性能急剧下降，所以有很多方式来优化，</description>
+    </item>
+    
+  </channel>
+</rss>

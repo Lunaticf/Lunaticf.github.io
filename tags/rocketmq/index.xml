@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>RocketMQ on 添忧杂货铺</title>
+    <link>https://lunaticf.github.io/tags/rocketmq/</link>
+    <description>Recent content in RocketMQ on 添忧杂货铺</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Fri, 10 Jan 2020 23:58:51 +0800</lastBuildDate>
+    
+	<atom:link href="https://lunaticf.github.io/tags/rocketmq/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>RocketMQ Internals</title>
+      <link>https://lunaticf.github.io/posts/rocketmq/</link>
+      <pubDate>Fri, 10 Jan 2020 23:58:51 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/posts/rocketmq/</guid>
+      <description>月光倒囊入水，江涛吞吐，露气吸之，噀天为白。 林下漏月光，疏疏如残雪。 &amp;mdash; 张岱 随着微服务架构兴起，原有系统通常需要垂直拆分，孵化出更小粒度的小型</description>
+    </item>
+    
+  </channel>
+</rss>

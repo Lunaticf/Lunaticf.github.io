@@ -6,10 +6,37 @@
     <description>Recent content on 添忧杂货铺</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Thu, 09 Jan 2020 17:45:13 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 30 Jan 2020 11:59:20 +0800</lastBuildDate>
     
 	<atom:link href="https://lunaticf.github.io/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Java Collection</title>
+      <link>https://lunaticf.github.io/posts/java-collections/</link>
+      <pubDate>Thu, 30 Jan 2020 11:59:20 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/posts/java-collections/</guid>
+      <description>满洞苔钱，买断风烟。笑桃花流落晴川。石楼高处，夜夜啼猿，看二更云、三更月、四更天。细草如毡，独枕空拳。与山麋、野鹿同眠。残霞未散，淡雾沉绵。</description>
+    </item>
+    
+    <item>
+      <title>Lock and Optimization</title>
+      <link>https://lunaticf.github.io/posts/lock-and-optimization/</link>
+      <pubDate>Sat, 18 Jan 2020 15:36:30 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/posts/lock-and-optimization/</guid>
+      <description>最是夜初群籁寂，临轩坐拥一湖星 &amp;mdash; 雍正 锁是最常用的解决并发的手段，而高并发的环境下，频繁的竞争锁会使得程序性能急剧下降，所以有很多方式来优化，</description>
+    </item>
+    
+    <item>
+      <title>RocketMQ Internals</title>
+      <link>https://lunaticf.github.io/posts/rocketmq/</link>
+      <pubDate>Fri, 10 Jan 2020 23:58:51 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/posts/rocketmq/</guid>
+      <description>月光倒囊入水，江涛吞吐，露气吸之，噀天为白。 林下漏月光，疏疏如残雪。 &amp;mdash; 张岱 随着微服务架构兴起，原有系统通常需要垂直拆分，孵化出更小粒度的小型</description>
+    </item>
     
     <item>
       <title>GoF Design Patterns in Java&#39;s core libraries</title>
