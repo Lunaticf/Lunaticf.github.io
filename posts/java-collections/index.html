@@ -66,7 +66,7 @@
                     </h1>
                     <h2 class="headline">
                     Jan 30, 2020 11:59
-                    · 4584 words
+                    · 4757 words
                     · 10 minute read
                       <span class="tags">
                       
@@ -580,6 +580,19 @@ final boolean accessOrder;
 <li>弱引用 WeakReference 只要 gc 启动 就会回收</li>
 <li>虚引用 这个比较特殊，可以用来实现类似 Object.finalize 功能</li>
 </ul>
+
+<p>多加一个虚引用的解释，又称为幽灵引用或者幻影引用。一个对象是否有虚引用的存在， 完全不会对其生存时间构成影响，也无法通过虚引用取得一个对象。为一个对象设置虚引用关联的唯一目的就是能在这个对象被回收时收到一个系统通知。</p>
+
+<pre><code class="language-java">ReferenceQueue&lt;TestObject&gt; queue = new ReferenceQueue&lt;&gt;();
+Obejct obj = new Object();
+PhantomReference&lt;TestObject&gt; phantomRef = 
+				new PhantomReference&lt;TestObject&gt;(obj, queue);
+obj = null;
+System.gc();
+if (queue.poll() != null) {
+    System.out.println(&quot;该对象已被回收&quot;);
+}
+</code></pre>
 
 <p>WeakHashMap 主要用来实现缓存，通过使用 WeakHashMap 来引用缓存对象，由 JVM 对这部分缓存进行回收。</p>
 
