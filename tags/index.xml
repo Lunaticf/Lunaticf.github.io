@@ -6,7 +6,7 @@
     <description>Recent content in Tags on 添忧杂货铺</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Thu, 30 Jan 2020 11:59:20 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 10 Feb 2020 19:16:45 +0800</lastBuildDate>
     
 	<atom:link href="https://lunaticf.github.io/tags/index.xml" rel="self" type="application/rss+xml" />
     
@@ -14,16 +14,25 @@
     <item>
       <title></title>
       <link>https://lunaticf.github.io/tags/</link>
-      <pubDate>Thu, 30 Jan 2020 11:59:20 +0800</pubDate>
+      <pubDate>Mon, 10 Feb 2020 19:16:45 +0800</pubDate>
       
       <guid>https://lunaticf.github.io/tags/</guid>
       <description></description>
     </item>
     
     <item>
+      <title>Distributed</title>
+      <link>https://lunaticf.github.io/tags/distributed/</link>
+      <pubDate>Mon, 10 Feb 2020 19:16:45 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/tags/distributed/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Java</title>
       <link>https://lunaticf.github.io/tags/java/</link>
-      <pubDate>Thu, 30 Jan 2020 11:59:20 +0800</pubDate>
+      <pubDate>Mon, 10 Feb 2020 19:16:45 +0800</pubDate>
       
       <guid>https://lunaticf.github.io/tags/java/</guid>
       <description></description>

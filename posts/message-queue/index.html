@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		 
+			
+  
+    <meta name="twitter:card" content="summary"/>
+    
+      <meta name="twitter:image" content="https://lunaticf.github.io/images/avatar.png" />
+    
+  
+  
+  <meta name="twitter:title" content="Message Queue"/>
+  <meta name="twitter:description" content="彼亦一时，此亦一时，浩浩洪流之咏何必奇 &mdash;- 李白 概述 其实最近发现很多model或者范式在我们生活中无处不在，抽象的力量是无穷的。比如我们平时都在"/>
+  
+  
+  
+  
+    <meta name="twitter:creator" content="@Lunaticf"/>
+  
+
+
+
+		
+		<meta name="author" content="Lunaticf">
+		<meta name="description" content="添忧杂货铺">
+		<meta name="generator" content="Hugo 0.55.6" />
+		<title>Message Queue &middot; 添忧杂货铺</title>
+		<link rel="shortcut icon" href="https://lunaticf.github.io/images/favicon.ico">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/style.css">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/highlight.css">
+
+		
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/font-awesome.min.css">
+		
+
+		
+		<link href="https://lunaticf.github.io/index.xml" rel="alternate" type="application/rss+xml" title="添忧杂货铺" />
+		
+
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='https://lunaticf.github.io/'> <span class="arrow">←</span>Home</a>
+	
+	<a href='https://lunaticf.github.io/posts'>Archive</a>
+	<a href='https://lunaticf.github.io/tags'>Tags</a>
+	<a href='https://lunaticf.github.io/about'>About</a>
+
+	
+</nav>
+
+
+        <section id="wrapper" class="post">
+            <article>
+                <header>
+                    <h1>
+                        Message Queue
+                    </h1>
+                    <h2 class="headline">
+                    Feb 10, 2020 19:16
+                    · 4469 words
+                    · 9 minute read
+                      <span class="tags">
+                      
+                      
+                          
+                              <a href="https://lunaticf.github.io/tags/java">Java</a>
+                          
+                              <a href="https://lunaticf.github.io/tags/distributed">Distributed</a>
+                          
+                      
+                      
+                      </span>
+                    </h2>
+                </header>
+                
+                <section id="post-body">
+                    
+
+<blockquote>
+<p><font face="STCAIYUN">彼亦一时，此亦一时，浩浩洪流之咏何必奇 &mdash;- 李白</font></p>
+</blockquote>
+
+<h2 id="概述">概述</h2>
+
+<p>其实最近发现很多model或者范式在我们生活中无处不在，抽象的力量是无穷的。比如我们平时都在用的快递柜或者驿站就像最古老的中间件消息队列，以前派送快递快递员与我必须同时能够在线，非常麻烦。当快递员来了之后，我不在，就要重新约定时间，这就像分布式中A调用B服务需要考虑调用失败等各种各样的问题。那么现在快递员只需要把快递放到柜子里，我方便的时候就可以拿，我跟快递员就解耦了。</p>
+
+<p>而计算机世界中的消息队列就不止这一个功能了，可以说是非常强大。在当前的系统架构中，消息队列一般能够解决三个问题，异步处理、流量控制和服务解耦。</p>
+
+<h3 id="异步处理">异步处理</h3>
+
+<p>有一个经典的问题是如何设计一个秒杀系统。秒杀系统的核心问题是在瞬时的海量请求下，有限的服务器如何处理。
+处理一个秒杀请求通常包含以下步骤：</p>
+
+<ul>
+<li>风险控制</li>
+<li>库存锁定</li>
+<li>生成订单</li>
+<li>短信通知</li>
+<li>生成统计数据</li>
+</ul>
+
+<p>如果没有任何优化，直接一个请求过来，等这5步全部完成，然后返回结果。</p>
+
+<p>但是我们可以看到其实只有前两个步骤决定秒杀成功与否，只要用户的秒杀请求经过风险控制和库存锁定，就可以先返回结果了。后面的事情可以慢慢做。所以我们可以把后面三步放到消息队列里，异步的进行后续的操作。</p>
+
+<p>这样不仅提高了响应速度，也可以让更多的服务器资源来处理前面的秒杀请求核心步骤。</p>
+
+<p>所以消息队列可以让我们的操作异步完成，提高响应速度。(对于实时性要求不高的操作)</p>
+
+<h3 id="流量控制">流量控制</h3>
+
+<p>利用异步处理，我们减少了三个步骤，但是还是有大量的请求会到服务器上。我们可以在网关和秒杀系统之间使用消息队列，实现流量控制和保护服务器。其实这个本质上是解决上下游生产和消费能力不相匹配的问题，我们服务器的消费能力不够，所以我们用消息队列缓存所有请求，请求先堆积在消息队列中，起到了“削峰填谷”的作用。</p>
+
+<p>超时的请求，我们就直接返回秒杀失败就好了。这样看起来好，但是也带来两个问题，一是调用链变长了，所以响应变慢。二是网关和秒杀系统都需要将原来的同步程序改成异步的，增加了系统复杂度。</p>
+
+<p>如果我们能够预估出我们秒杀服务的处理能力，更好的方式是使用限流算法，比如令牌桶限流。我们会有一个令牌生产器按照我们设定的能力每秒生产多少个令牌，网关每次转发一个请求到秒杀服务都需要获得一个令牌，这样保证单位时间能处理的请求不超过令牌数，没抢到令牌的请求直接拒绝。</p>
+
+<p>而这个令牌桶就可以用消息队列来存放令牌。</p>
+
+<h3 id="服务解耦">服务解耦</h3>
+
+<p>电商系统中创建一个订单后，可能会有很多下游的服务，比如支付系统、风控系统、客服系统和统计数据。</p>
+
+<p>那么我们就可以用消息队列，订单服务直接发一个消息到队列里，所有下游服务自己都订阅该topic，每个下游系统自己去取。</p>
+
+<p>这样消息队列就起到了解耦的功能。</p>
+
+<h2 id="没有银弹">没有银弹</h2>
+
+<p>总结一下消息队列的适用场景，我们在单体应用中需要用队列来解决的问题，分布式系统中一般都可以用消息队列来解决。</p>
+
+<p>消息队列显然不是没有缺点的，首先消息队列引入了延迟，其次消息队列增加了系统的复杂度。并且我们还要维护消息队列的高可用性。</p>
+
+<p>那么我们比较一下开源的几款消息队列，应该选择哪一个。</p>
+
+<ul>
+<li>消息的可靠传递 - 不丢消息</li>
+<li>Cluster 支持集群 高可用</li>
+<li>性能够好</li>
+</ul>
+
+<h3 id="rabbitmq">RabbitMQ</h3>
+
+<p>兔子MQ是Erlang写的，比较小众。但是使用的很多，RabbitMQ在生产者和队列之间放上了一个Exchange，就像交换机一样，我们可以灵活配置Exchange来分发消息。RabbitMQ存在几个问题：</p>
+
+<ul>
+<li>消息堆积支持不好</li>
+<li>性能稍差，每秒钟可以处理几万到十几万条消息</li>
+<li>Erlang较为小众</li>
+</ul>
+
+<h3 id="rocketmq">RocketMQ</h3>
+
+<p>RocketMQ是阿里开源的消息队列，之后捐给了Apache。经过了双十一的考验，可知RocketMQ还是值得信赖的。
+RocketMQ的性能比RabbitMQ要高一个数量级，每秒钟大概能处理几十万条消息，比较适合金融场景的在线业务。</p>
+
+<h3 id="kafka">Kafka</h3>
+
+<p>Kafka是非常流行的消息队列，并且有着非常好的生态，特别是在大数据和流计算领域。
+Kafka性能非常好，大量使用了批量和异步的思想，比如客户端发消息攒够一部分再发。但是这样同步操作也会受影响，消息不多的时候，延迟就高。
+所以Kafka不太适合在线的业务场景。</p>
+
+<h2 id="原理和应用">原理和应用</h2>
+
+<p>每个开源技术产品都有一大堆的自己的名词，我们要做的是透过现象看本质，这些名词背后的概念是相同的。</p>
+
+<blockquote>
+<p>好的架构不是设计出来的 而是演变出来的</p>
+</blockquote>
+
+<h3 id="主题和队列有什么区别">主题和队列有什么区别</h3>
+
+<p>最初的消息队列就是数据结构中的队列模型，但是有一个问题，就是一个数据只能被消费一次。如果按照
+我们之前说的多个下游系统都要消费，那么没有办法做到。</p>
+
+<p>所以现在演化出了 发布 - 订阅 模型，消息发布者为publisher，消息接收方为订阅者Subscriber。
+服务端存放消息的主题称为主题 Topic，每个订阅者都能收到主题的所有消息。</p>
+
+<p>所以问题就是一份数据能不能被消费多次。</p>
+
+<p>而队列模型还有一个老玩家&hellip;就是之前提到的RabbitMQ，如果你想一份数据被消费多次，就要设置多个队列，
+一个消息要由Exchange投递到多个队列，在Exchange里配置投递规则。</p>
+
+<h3 id="rocketmq的消息模型">RocketMQ的消息模型</h3>
+
+<p>而RocketMQ虽然使用发布订阅模型，但是仍然保留着队列模型。</p>
+
+<p>首先我们思考消息队列的生产和消费容错机制：</p>
+
+<ul>
+<li>发布者如何保证投递成功，需要broker响应ACK，否则重传。</li>
+<li>broker如何保证订阅者消费成功，需要订阅者ACK。</li>
+</ul>
+
+<p>我们通常的场景是每个下游服务有多个实例</p>
+
+<ul>
+<li>每个下游服务消费同样的消息</li>
+<li>每个下游服务的实例竞争消息 不能消费同一个消息</li>
+</ul>
+
+<p>那么单纯用发布订阅模型是做不到的，因为多个消费者竞争消息的话，需要使用队列模型。
+如果使用发布订阅模型，我们需要记录每个消费者消费到哪了，而一条消息被某个消费者消费之前，
+我们无法知道有没有消费成功，所以不能让另一个消费者消费，否则就违背了消息的有序性。</p>
+
+<p>也就是说，每个主题在任意时刻，至多只能有一个消费者实例在进行消费，那就没法通过水平扩展消费者的数量来提升消费端总体的消费性能。</p>
+
+<p>如图是RocketMQ的消费模型，每个主题包含多个队列，通过多个队列来实现多实例并行生产和消费。需要注意的是，RocketMQ 只在队列上保证消息的有序性，主题层面是无法保证消息的严格顺序的。</p>
+
+<p>RocketMQ 中，订阅者的概念是通过消费组（Consumer Group）来体现的。每个消费组都消费主题中一份完整的消息，不同消费组之间消费进度彼此不受影响，也就是说，一条消息被 Consumer Group1 消费过，也会再给 Consumer Group2 消费。这就对应于我们的多个下游服务。</p>
+
+<p>在 Topic 的消费过程中，由于消息需要被不同的组进行多次消费，所以消费完的消息并不会立即被删除，这就需要 RocketMQ 为每个消费组在每个队列上维护一个消费位置（Consumer Offset），这个位置之前的消息都被消费过，之后的消息都没有被消费过，每成功消费一条消息，消费位置就加一。这个消费位置是非常重要的概念，我们在使用消息队列的时候，丢消息的原因大多是由于消费位置处理不当导致的。</p>
+
+<p>注意，每个队列只能串行消费，RocketMQ通过多个队列实现多个消费者并行消费。</p>
+
+<p><img src="https://cdn.nlark.com/yuque/0/2020/png/473264/1581343697630-b1292c0c-c39c-4694-9c2b-3ab88302a54f.png" alt="" /></p>
+
+<h3 id="分布式事务">分布式事务</h3>
+
+<p>在一个下单操作中，我们会有两个操作，创建订单和删除购物车中该商品。
+那么其实删除购物车该商品可以利用消息队列异步化，先返回用户结果。</p>
+
+<p>但这里就有一个问题，如果任何一个步骤失败了，就会出现数据不一致。</p>
+
+<p>事务通俗可以理解为就是一系列操作要么一起成功，要么一起失败。当然还有CID，这里只是原子性。
+但是分布式系统中代价太大，所以能实现一致性就已经很好了。所以我们通常可以看到顺序一致性、最终一致性这些弱化的一致性要求。</p>
+
+<p>实现分布式事务有2PC、TCC等，这些也都比较复杂，也并不完美。利用消息队列实现事务适用于异步更新数据，
+对实时性要求不高的场景。</p>
+
+<p>Kafka和RocketMQ都提供了事务的支持，我们先自己想一下怎么解决前面提到的问题。</p>
+
+<ul>
+<li>如果创建订单失败 我们需要通知购物车系统不删除</li>
+<li>如果创建订单成功 我们才可以通知购物车系统删除</li>
+</ul>
+
+<p>那么我们自然可以也用类似两阶段提交的思路，实际的做法是先给消息队列发送一个半消息，
+半消息的意思是在本地事务执行完毕之前，消费者是收不到消息的。那么如果本地订单创建成功，购物车系统就能消费。创建失败，购物车系统就收不到消息。</p>
+
+<p>有个问题，那么如果提交的时候crash了，消费队列如何知道这条消息该怎么处理。
+Kafka会直接抛异常，我们可以在业务代码中反复尝试提交。</p>
+
+<p>RocketMQ提供了事务反查，如果 Producer 也就是订单系统，在提交或者回滚事务消息时发生网络异常，RocketMQ 的 Broker 没有收到提交或者回滚的请求，Broker 会定期去 Producer 上反查这个事务对应的本地事务的状态，然后根据反查结果决定提交或者回滚这个事务。</p>
+
+<h3 id="如何确保消息不会丢失">如何确保消息不会丢失</h3>
+
+<p>绝大部分消息的丢失都是我们自己的锅，没有正确配置和使用消息队列。</p>
+
+<h4 id="生产阶段">生产阶段</h4>
+
+<p>消息队列通过最常用的请求确认机制保证消息不丢失，我们在代码里捕获异常重试即可。</p>
+
+<h4 id="存储阶段">存储阶段</h4>
+
+<p>单个节点的Broker，需要配置写入磁盘后再给客户端发送响应，就能保证不丢失。</p>
+
+<p>集群的话，至少将消息发送到2个以上的节点，再给客户端回复发送确认响应。</p>
+
+<h4 id="消费阶段">消费阶段</h4>
+
+<p>编写消费代码时需要注意的是，不要在收到消息后就立即发送消费确认，而是应该在执行完所有消费业务逻辑之后，再发送消费确认。</p>
+
+<h3 id="如何处理重复消息">如何处理重复消息</h3>
+
+<p>如果生产者发送消息失败，就会重新发送消息，而可能只是Broker的响应丢了。这样就会出现重复消息。</p>
+
+<p>那么有两种解决办法：</p>
+
+<ul>
+<li>消息队列保证消息不重复</li>
+<li>订阅者做幂等 不重复消费消息</li>
+</ul>
+
+<p>MQTT标准给出了三个级别：</p>
+
+<ul>
+<li>At most once: 至多一次。</li>
+<li>At least once: 至少一次。</li>
+<li>Exactly once: 恰好一次。</li>
+</ul>
+
+<p>我们现在常用的绝大部分消息队列提供的服务质量都是 At least once，包括 RocketMQ、RabbitMQ 和 Kafka 都是这样。也就是说，消息队列很难保证消息不重复。即使实现了，在消费端如果返回给Broker的响应丢了，又会消费重复数据。</p>
+
+<p>所以我们只能通过在消费端做幂等。</p>
+
+<blockquote>
+<p>At least once + 幂等消费 = Exactly once。</p>
+</blockquote>
+
+<p>一些常用的设计幂等业务的技巧：</p>
+
+<h5 id="利用数据库的唯一约束实现幂等">利用数据库的唯一约束实现幂等</h5>
+
+<p>比如将账户的余额加100这个非幂等操作转换为幂等操作，我们可以数据库中建一张转账流水表，
+转账单和账户ID做唯一约束，插入这个记录只能一次，就实现了幂等操作。</p>
+
+<p>基于这个思路，不光是可以使用关系型数据库，只要是支持类似“INSERT IF NOT EXIST”语义的存储类系统都可以用于实现幂等，比如，你可以用 Redis 的 SETNX 命令来替代数据库中的唯一约束，来实现幂等消费。</p>
+
+<h5 id="利用版本号">利用版本号</h5>
+
+<p>发消息时获取当前数据最新的版本号，消费数据前，比较当前数据的版本号是否和消息中的版本号一致，如果不一致就拒绝更新数据，更新数据的同时将版本号+1，一样可以实现幂等更新。有点像CAS。</p>
+
+<h5 id="全局唯一的id">全局唯一的ID</h5>
+
+<p>消费时，先根据这个 ID 检查这条消息是否有被消费过，如果没有消费过，才更新数据，然后将消费状态置为已消费。</p>
+
+<p>这个看上去最简单，但是首先生成全局ID就不是容易的事，其次后面三个步骤如果不是原子的，会出现并发冲突。
+对于这个问题，当然我们可以用事务来实现，也可以用锁来实现，但是在分布式系统中，无论是分布式事务还是分布式锁都是比较难解决问题。</p>
+
+<h2 id="参考">参考</h2>
+
+<ul>
+<li><a href="https://www.rabbitmq.com/tutorials/tutorial-three-python.html">https://www.rabbitmq.com/tutorials/tutorial-three-python.html</a></li>
+<li><a href="https://kafka.apache.org/documentation/">https://kafka.apache.org/documentation/</a></li>
+<li>极客时间消息队列高手课</li>
+<li>《Rocket技术内幕》</li>
+</ul>
+
+                </section>
+            </article>
+
+            
+
+            
+                <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'https-lunaticf-github-io'; 
+
+     
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+            
+
+            
+
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.github.com/Lunaticf">
+        <i class="fa fa-github-square"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+       © Copyright 2020 <i class="fa fa-heart" aria-hidden="true"></i> Lunaticf
+    
+    </p>
+    <script src="https://lunaticf.github.io/live2d/autoload.js"></script>
+</footer>
+
+        </section>
+
+        <script src="https://lunaticf.github.io/js/jquery-3.3.1.min.js"></script>
+<script src="https://lunaticf.github.io/js/main.js"></script>
+<script src="https://lunaticf.github.io/js/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'your_google_analytics_id', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+
+
+
+    </body>
+</html>

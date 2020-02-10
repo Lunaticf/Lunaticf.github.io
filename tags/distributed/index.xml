@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Distributed on 添忧杂货铺</title>
+    <link>https://lunaticf.github.io/tags/distributed/</link>
+    <description>Recent content in Distributed on 添忧杂货铺</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Mon, 10 Feb 2020 19:16:45 +0800</lastBuildDate>
+    
+	<atom:link href="https://lunaticf.github.io/tags/distributed/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Message Queue</title>
+      <link>https://lunaticf.github.io/posts/message-queue/</link>
+      <pubDate>Mon, 10 Feb 2020 19:16:45 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/posts/message-queue/</guid>
+      <description>彼亦一时，此亦一时，浩浩洪流之咏何必奇 &amp;mdash;- 李白 概述 其实最近发现很多model或者范式在我们生活中无处不在，抽象的力量是无穷的。比如我们平时都在</description>
+    </item>
+    
+  </channel>
+</rss>
