@@ -6,7 +6,7 @@
     <description>Recent content in Distributed System on 添忧杂货铺</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Wed, 18 Dec 2019 19:20:50 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 03 Feb 2020 19:20:50 +0800</lastBuildDate>
     
 	<atom:link href="https://lunaticf.github.io/tags/distributed-system/index.xml" rel="self" type="application/rss+xml" />
     
@@ -14,7 +14,7 @@
     <item>
       <title>Distributed System Introduction</title>
       <link>https://lunaticf.github.io/posts/distributed-system-introduction/</link>
-      <pubDate>Wed, 18 Dec 2019 19:20:50 +0800</pubDate>
+      <pubDate>Mon, 03 Feb 2020 19:20:50 +0800</pubDate>
       
       <guid>https://lunaticf.github.io/posts/distributed-system-introduction/</guid>
       <description>山一程，水一程，身向榆关那畔行，夜深千帐灯。风一更，雪一更，聒碎乡心梦不成，故园无此声。&amp;mdash; 纳兰性德 分布式系统入门 什么是一致性 CA</description>

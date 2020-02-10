@@ -6,24 +6,15 @@
     <description>Recent content in Java on 添忧杂货铺</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 10 Feb 2020 19:16:45 +0800</lastBuildDate>
+    <lastBuildDate>Mon, 20 Jan 2020 11:59:20 +0800</lastBuildDate>
     
 	<atom:link href="https://lunaticf.github.io/categories/java/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>Message Queue</title>
-      <link>https://lunaticf.github.io/posts/message-queue/</link>
-      <pubDate>Mon, 10 Feb 2020 19:16:45 +0800</pubDate>
-      
-      <guid>https://lunaticf.github.io/posts/message-queue/</guid>
-      <description>彼亦一时，此亦一时，浩浩洪流之咏何必奇 &amp;mdash;- 李白 概述 其实最近发现很多model或者范式在我们生活中无处不在，抽象的力量是无穷的。比如我们平时都在</description>
-    </item>
-    
-    <item>
       <title>Java Collection</title>
       <link>https://lunaticf.github.io/posts/java-collections/</link>
-      <pubDate>Thu, 30 Jan 2020 11:59:20 +0800</pubDate>
+      <pubDate>Mon, 20 Jan 2020 11:59:20 +0800</pubDate>
       
       <guid>https://lunaticf.github.io/posts/java-collections/</guid>
       <description>满洞苔钱，买断风烟。笑桃花流落晴川。石楼高处，夜夜啼猿，看二更云、三更月、四更天。细草如毡，独枕空拳。与山麋、野鹿同眠。残霞未散，淡雾沉绵。</description>
@@ -36,6 +27,15 @@
       
       <guid>https://lunaticf.github.io/posts/lock-and-optimization/</guid>
       <description>最是夜初群籁寂，临轩坐拥一湖星 &amp;mdash; 雍正 锁是最常用的解决并发的手段，而高并发的环境下，频繁的竞争锁会使得程序性能急剧下降，所以有很多方式来优化，</description>
+    </item>
+    
+    <item>
+      <title>Message Queue</title>
+      <link>https://lunaticf.github.io/posts/message-queue/</link>
+      <pubDate>Mon, 06 Jan 2020 19:16:45 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/posts/message-queue/</guid>
+      <description>彼亦一时，此亦一时，浩浩洪流之咏何必奇 &amp;mdash;- 李白 概述 其实最近发现很多model或者范式在我们生活中无处不在，抽象的力量是无穷的。比如我们平时都在</description>
     </item>
     
     <item>

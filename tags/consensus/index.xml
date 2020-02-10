@@ -6,7 +6,7 @@
     <description>Recent content in consensus on 添忧杂货铺</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 23 Dec 2019 00:06:30 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 08 Feb 2020 00:06:30 +0800</lastBuildDate>
     
 	<atom:link href="https://lunaticf.github.io/tags/consensus/index.xml" rel="self" type="application/rss+xml" />
     
@@ -14,7 +14,7 @@
     <item>
       <title>Lottery scheduling and proof of stake</title>
       <link>https://lunaticf.github.io/posts/%E5%BD%A9%E7%A5%A8%E8%B0%83%E5%BA%A6%E5%92%8Cpos/</link>
-      <pubDate>Mon, 23 Dec 2019 00:06:30 +0800</pubDate>
+      <pubDate>Sat, 08 Feb 2020 00:06:30 +0800</pubDate>
       
       <guid>https://lunaticf.github.io/posts/%E5%BD%A9%E7%A5%A8%E8%B0%83%E5%BA%A6%E5%92%8Cpos/</guid>
       <description>少年听雨歌楼上，红烛昏罗帐。 壮年听雨客舟中，江阔云低，断雁叫西风。 而今听雨僧庐下，鬓已星星也。 &amp;mdash; 蒋捷 基本概念 proportional-sha</description>
@@ -23,7 +23,7 @@
     <item>
       <title>Distributed System Introduction</title>
       <link>https://lunaticf.github.io/posts/distributed-system-introduction/</link>
-      <pubDate>Wed, 18 Dec 2019 19:20:50 +0800</pubDate>
+      <pubDate>Mon, 03 Feb 2020 19:20:50 +0800</pubDate>
       
       <guid>https://lunaticf.github.io/posts/distributed-system-introduction/</guid>
       <description>山一程，水一程，身向榆关那畔行，夜深千帐灯。风一更，雪一更，聒碎乡心梦不成，故园无此声。&amp;mdash; 纳兰性德 分布式系统入门 什么是一致性 CA</description>
@@ -32,7 +32,7 @@
     <item>
       <title>Raft</title>
       <link>https://lunaticf.github.io/posts/raft/</link>
-      <pubDate>Tue, 17 Dec 2019 20:20:31 +0800</pubDate>
+      <pubDate>Tue, 21 Jan 2020 20:20:31 +0800</pubDate>
       
       <guid>https://lunaticf.github.io/posts/raft/</guid>
       <description>人生到处知何似，应似飞鸿踏雪泥。 &amp;mdash; 苏轼《和子由渑池怀旧》 Raft论文翻译和总结 Abstract Raft是管理replicated log的一种共识算法，Ra</description>

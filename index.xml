@@ -6,24 +6,42 @@
     <description>Recent content on 添忧杂货铺</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 10 Feb 2020 19:16:45 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 08 Feb 2020 00:06:30 +0800</lastBuildDate>
     
 	<atom:link href="https://lunaticf.github.io/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
-      <title>Message Queue</title>
-      <link>https://lunaticf.github.io/posts/message-queue/</link>
-      <pubDate>Mon, 10 Feb 2020 19:16:45 +0800</pubDate>
+      <title>Lottery scheduling and proof of stake</title>
+      <link>https://lunaticf.github.io/posts/%E5%BD%A9%E7%A5%A8%E8%B0%83%E5%BA%A6%E5%92%8Cpos/</link>
+      <pubDate>Sat, 08 Feb 2020 00:06:30 +0800</pubDate>
       
-      <guid>https://lunaticf.github.io/posts/message-queue/</guid>
-      <description>彼亦一时，此亦一时，浩浩洪流之咏何必奇 &amp;mdash;- 李白 概述 其实最近发现很多model或者范式在我们生活中无处不在，抽象的力量是无穷的。比如我们平时都在</description>
+      <guid>https://lunaticf.github.io/posts/%E5%BD%A9%E7%A5%A8%E8%B0%83%E5%BA%A6%E5%92%8Cpos/</guid>
+      <description>少年听雨歌楼上，红烛昏罗帐。 壮年听雨客舟中，江阔云低，断雁叫西风。 而今听雨僧庐下，鬓已星星也。 &amp;mdash; 蒋捷 基本概念 proportional-sha</description>
+    </item>
+    
+    <item>
+      <title>Distributed System Introduction</title>
+      <link>https://lunaticf.github.io/posts/distributed-system-introduction/</link>
+      <pubDate>Mon, 03 Feb 2020 19:20:50 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/posts/distributed-system-introduction/</guid>
+      <description>山一程，水一程，身向榆关那畔行，夜深千帐灯。风一更，雪一更，聒碎乡心梦不成，故园无此声。&amp;mdash; 纳兰性德 分布式系统入门 什么是一致性 CA</description>
+    </item>
+    
+    <item>
+      <title>Raft</title>
+      <link>https://lunaticf.github.io/posts/raft/</link>
+      <pubDate>Tue, 21 Jan 2020 20:20:31 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/posts/raft/</guid>
+      <description>人生到处知何似，应似飞鸿踏雪泥。 &amp;mdash; 苏轼《和子由渑池怀旧》 Raft论文翻译和总结 Abstract Raft是管理replicated log的一种共识算法，Ra</description>
     </item>
     
     <item>
       <title>Java Collection</title>
       <link>https://lunaticf.github.io/posts/java-collections/</link>
-      <pubDate>Thu, 30 Jan 2020 11:59:20 +0800</pubDate>
+      <pubDate>Mon, 20 Jan 2020 11:59:20 +0800</pubDate>
       
       <guid>https://lunaticf.github.io/posts/java-collections/</guid>
       <description>满洞苔钱，买断风烟。笑桃花流落晴川。石楼高处，夜夜啼猿，看二更云、三更月、四更天。细草如毡，独枕空拳。与山麋、野鹿同眠。残霞未散，淡雾沉绵。</description>
@@ -39,15 +57,6 @@
     </item>
     
     <item>
-      <title>RocketMQ Internals</title>
-      <link>https://lunaticf.github.io/posts/rocketmq/</link>
-      <pubDate>Fri, 10 Jan 2020 23:58:51 +0800</pubDate>
-      
-      <guid>https://lunaticf.github.io/posts/rocketmq/</guid>
-      <description>月光倒囊入水，江涛吞吐，露气吸之，噀天为白。 林下漏月光，疏疏如残雪。 &amp;mdash; 张岱 随着微服务架构兴起，原有系统通常需要垂直拆分，孵化出更小粒度的小型</description>
-    </item>
-    
-    <item>
       <title>GoF Design Patterns in Java&#39;s core libraries</title>
       <link>https://lunaticf.github.io/posts/%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/</link>
       <pubDate>Thu, 09 Jan 2020 17:45:13 +0800</pubDate>
@@ -57,12 +66,12 @@
     </item>
     
     <item>
-      <title>Lottery scheduling and proof of stake</title>
-      <link>https://lunaticf.github.io/posts/%E5%BD%A9%E7%A5%A8%E8%B0%83%E5%BA%A6%E5%92%8Cpos/</link>
-      <pubDate>Mon, 23 Dec 2019 00:06:30 +0800</pubDate>
+      <title>Message Queue</title>
+      <link>https://lunaticf.github.io/posts/message-queue/</link>
+      <pubDate>Mon, 06 Jan 2020 19:16:45 +0800</pubDate>
       
-      <guid>https://lunaticf.github.io/posts/%E5%BD%A9%E7%A5%A8%E8%B0%83%E5%BA%A6%E5%92%8Cpos/</guid>
-      <description>少年听雨歌楼上，红烛昏罗帐。 壮年听雨客舟中，江阔云低，断雁叫西风。 而今听雨僧庐下，鬓已星星也。 &amp;mdash; 蒋捷 基本概念 proportional-sha</description>
+      <guid>https://lunaticf.github.io/posts/message-queue/</guid>
+      <description>彼亦一时，此亦一时，浩浩洪流之咏何必奇 &amp;mdash;- 李白 概述 其实最近发现很多model或者范式在我们生活中无处不在，抽象的力量是无穷的。比如我们平时都在</description>
     </item>
     
     <item>
@@ -72,24 +81,6 @@
       
       <guid>https://lunaticf.github.io/posts/aspect-oriented-programming/</guid>
       <description>莺莺燕燕春春，花花柳柳真真，事事风风韵韵。娇娇嫩嫩，停停当当人人。 &amp;mdash; 乔吉 面向切面编程 目前编程范式主要有以下几种： 面向过程编程 面向对象编程 函数</description>
-    </item>
-    
-    <item>
-      <title>Distributed System Introduction</title>
-      <link>https://lunaticf.github.io/posts/distributed-system-introduction/</link>
-      <pubDate>Wed, 18 Dec 2019 19:20:50 +0800</pubDate>
-      
-      <guid>https://lunaticf.github.io/posts/distributed-system-introduction/</guid>
-      <description>山一程，水一程，身向榆关那畔行，夜深千帐灯。风一更，雪一更，聒碎乡心梦不成，故园无此声。&amp;mdash; 纳兰性德 分布式系统入门 什么是一致性 CA</description>
-    </item>
-    
-    <item>
-      <title>Raft</title>
-      <link>https://lunaticf.github.io/posts/raft/</link>
-      <pubDate>Tue, 17 Dec 2019 20:20:31 +0800</pubDate>
-      
-      <guid>https://lunaticf.github.io/posts/raft/</guid>
-      <description>人生到处知何似，应似飞鸿踏雪泥。 &amp;mdash; 苏轼《和子由渑池怀旧》 Raft论文翻译和总结 Abstract Raft是管理replicated log的一种共识算法，Ra</description>
     </item>
     
     <item>

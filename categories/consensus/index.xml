@@ -6,7 +6,7 @@
     <description>Recent content in consensus on 添忧杂货铺</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Tue, 17 Dec 2019 20:20:31 +0800</lastBuildDate>
+    <lastBuildDate>Tue, 21 Jan 2020 20:20:31 +0800</lastBuildDate>
     
 	<atom:link href="https://lunaticf.github.io/categories/consensus/index.xml" rel="self" type="application/rss+xml" />
     
@@ -14,7 +14,7 @@
     <item>
       <title>Raft</title>
       <link>https://lunaticf.github.io/posts/raft/</link>
-      <pubDate>Tue, 17 Dec 2019 20:20:31 +0800</pubDate>
+      <pubDate>Tue, 21 Jan 2020 20:20:31 +0800</pubDate>
       
       <guid>https://lunaticf.github.io/posts/raft/</guid>
       <description>人生到处知何似，应似飞鸿踏雪泥。 &amp;mdash; 苏轼《和子由渑池怀旧》 Raft论文翻译和总结 Abstract Raft是管理replicated log的一种共识算法，Ra</description>

@@ -6,7 +6,7 @@
     <description>Recent content in Categories on 添忧杂货铺</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Mon, 10 Feb 2020 19:16:45 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 08 Feb 2020 00:06:30 +0800</lastBuildDate>
     
 	<atom:link href="https://lunaticf.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
     
@@ -14,16 +14,43 @@
     <item>
       <title></title>
       <link>https://lunaticf.github.io/categories/</link>
-      <pubDate>Mon, 10 Feb 2020 19:16:45 +0800</pubDate>
+      <pubDate>Sat, 08 Feb 2020 00:06:30 +0800</pubDate>
       
       <guid>https://lunaticf.github.io/categories/</guid>
       <description></description>
     </item>
     
     <item>
+      <title>operating system</title>
+      <link>https://lunaticf.github.io/categories/operating-system/</link>
+      <pubDate>Sat, 08 Feb 2020 00:06:30 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/categories/operating-system/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Distributed System</title>
+      <link>https://lunaticf.github.io/categories/distributed-system/</link>
+      <pubDate>Mon, 03 Feb 2020 19:20:50 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/categories/distributed-system/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>consensus</title>
+      <link>https://lunaticf.github.io/categories/consensus/</link>
+      <pubDate>Tue, 21 Jan 2020 20:20:31 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/categories/consensus/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Java</title>
       <link>https://lunaticf.github.io/categories/java/</link>
-      <pubDate>Mon, 10 Feb 2020 19:16:45 +0800</pubDate>
+      <pubDate>Mon, 20 Jan 2020 11:59:20 +0800</pubDate>
       
       <guid>https://lunaticf.github.io/categories/java/</guid>
       <description></description>
@@ -39,47 +66,11 @@
     </item>
     
     <item>
-      <title>RocketMQ</title>
-      <link>https://lunaticf.github.io/categories/rocketmq/</link>
-      <pubDate>Fri, 10 Jan 2020 23:58:51 +0800</pubDate>
-      
-      <guid>https://lunaticf.github.io/categories/rocketmq/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>design pattern</title>
       <link>https://lunaticf.github.io/categories/design-pattern/</link>
       <pubDate>Thu, 09 Jan 2020 17:45:13 +0800</pubDate>
       
       <guid>https://lunaticf.github.io/categories/design-pattern/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>operating system</title>
-      <link>https://lunaticf.github.io/categories/operating-system/</link>
-      <pubDate>Mon, 23 Dec 2019 00:06:30 +0800</pubDate>
-      
-      <guid>https://lunaticf.github.io/categories/operating-system/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>Distributed System</title>
-      <link>https://lunaticf.github.io/categories/distributed-system/</link>
-      <pubDate>Wed, 18 Dec 2019 19:20:50 +0800</pubDate>
-      
-      <guid>https://lunaticf.github.io/categories/distributed-system/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>consensus</title>
-      <link>https://lunaticf.github.io/categories/consensus/</link>
-      <pubDate>Tue, 17 Dec 2019 20:20:31 +0800</pubDate>
-      
-      <guid>https://lunaticf.github.io/categories/consensus/</guid>
       <description></description>
     </item>
     
