@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		 
+			
+  
+    <meta name="twitter:card" content="summary"/>
+    
+      <meta name="twitter:image" content="https://lunaticf.github.io/images/avatar.png" />
+    
+  
+  
+  <meta name="twitter:title" content="Java NIO"/>
+  <meta name="twitter:description" content="山沓水匝，树杂云合。目既往还，心亦吐纳。春日迟迟，秋风飒飒。情往似赠，兴来如答。&mdash; 刘勰 Overview 首先，NIO 可以理解为 Non-blocking IO。当一个 Thread 要"/>
+  
+  
+  
+  
+    <meta name="twitter:creator" content="@Lunaticf"/>
+  
+
+
+
+		
+		<meta name="author" content="Lunaticf">
+		<meta name="description" content="添忧杂货铺">
+		<meta name="generator" content="Hugo 0.55.6" />
+		<title>Java NIO &middot; 添忧杂货铺</title>
+		<link rel="shortcut icon" href="https://lunaticf.github.io/images/favicon.ico">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/style.css">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/highlight.css">
+
+		
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/font-awesome.min.css">
+		
+
+		
+		<link href="https://lunaticf.github.io/index.xml" rel="alternate" type="application/rss+xml" title="添忧杂货铺" />
+		
+
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='https://lunaticf.github.io/'> <span class="arrow">←</span>Home</a>
+	
+	<a href='https://lunaticf.github.io/posts'>Archive</a>
+	<a href='https://lunaticf.github.io/tags'>Tags</a>
+	<a href='https://lunaticf.github.io/about'>About</a>
+
+	
+</nav>
+
+
+        <section id="wrapper" class="post">
+            <article>
+                <header>
+                    <h1>
+                        Java NIO
+                    </h1>
+                    <h2 class="headline">
+                    Feb 16, 2020 14:34
+                    · 2843 words
+                    · 6 minute read
+                      <span class="tags">
+                      
+                      
+                          
+                              <a href="https://lunaticf.github.io/tags/java">java</a>
+                          
+                      
+                      
+                      </span>
+                    </h2>
+                </header>
+                
+                <section id="post-body">
+                    
+
+<blockquote>
+<p><font face="STCAIYUN">山沓水匝，树杂云合。目既往还，心亦吐纳。春日迟迟，秋风飒飒。情往似赠，兴来如答。&mdash; 刘勰</font></p>
+</blockquote>
+
+<h2 id="overview">Overview</h2>
+
+<p>首先，NIO 可以理解为 Non-blocking IO。当一个 Thread 要求一个 Channel 读一些数据到 buffer 里时，Thread 不会 block，而是可以干别的事情。与之对应的是我们用的普通 IO，当调用 read 时，如果没有数据会一直堵塞在那里。</p>
+
+<p>依然要强调的是，没有一种范式是绝对好的，NIO 有其适用的场景，没有银弹。</p>
+
+<h3 id="channel-和-buffer">Channel 和 Buffer</h3>
+
+<p>在NIO中有两个重要的概念，Channel 和 Buffer。在标准的 IO API中，我们使用字节流和字符流操作。在 NIO 中，我们永远是数据从 Channel 读到 buffer，从 buffer 写到 Channel，所以说 NIO 是面向缓冲的，而 IO 是面向流的。</p>
+
+<p>NIO中有很多种 Channel，比如</p>
+
+<ul>
+<li>FileChannel</li>
+<li>DatagramChannel 看名字就知道是UDP</li>
+<li>SocketChannel</li>
+<li>ServerSocketChannel</li>
+</ul>
+
+<p>可以看到涵盖了文件、UDP/TCP 网络 IO。</p>
+
+<p>Buffer同样有很多实现~</p>
+
+<ul>
+<li>ByteBuffer</li>
+<li>CharBuffer</li>
+<li>DoubleBuffer</li>
+<li>FloatBuffer</li>
+<li>IntBuffer</li>
+<li>LongBuffer</li>
+<li>ShortBuffer</li>
+</ul>
+
+<h3 id="selector">Selector</h3>
+
+<p>另一个重要的概念是 Selector，这个也可以叫复用器，他会帮我们监视多个 Channel 上的事件，比如</p>
+
+<ul>
+<li>connection opened</li>
+<li>data arrived</li>
+<li>&hellip;</li>
+</ul>
+
+<p>那么这样有什么好处呢？如果我们的服务器要处理超多的连接，就不适合为每一个连接开一个线程单独处理，特别是每一个连接的 traffic 比较少的情况下。 NIO 可以帮助我们高效的处理多个连接，比如聊天室这种场景。</p>
+
+<p>也有人叫 NIO 是 New IO， anyway，我们要学习的是其中的原理和模式啦。</p>
+
+<p>接下来我们会详细深入NIO。</p>
+
+<h2 id="channel">Channel</h2>
+
+<p>NIO 的 Channel 跟我们平时使用的流和有一些差别：</p>
+
+<ul>
+<li>Channel 既可以读又可以写 Stream 通常是 one-way 的。</li>
+<li>Channel 是非堵塞的</li>
+<li>Channel 总是通过 Buffer 操作</li>
+</ul>
+
+<p>下面我们来看一个基本的例子，code talks</p>
+
+<pre><code class="language-java">RandomAccessFile aFile = new RandomAccessFile(&quot;data/nio-data.txt&quot;, &quot;rw&quot;);
+FileChannel inChannel = aFile.getChannel();
+
+ByteBuffer buf = ByteBuffer.allocate(48);
+
+int bytesRead = inChannel.read(buf);
+while (bytesRead != -1) {
+
+    System.out.println(&quot;Read &quot; + bytesRead);
+
+    // 注意这里的flip 我们刚刚往buf写数据 现在是读 需要flip
+    buf.flip();
+
+    while(buf.hasRemaining()){
+        System.out.print((char) buf.get());
+    }
+
+    // clear
+    buf.clear();
+    bytesRead = inChannel.read(buf);
+}
+aFile.close();
+</code></pre>
+
+<h2 id="buffer">Buffer</h2>
+
+<p>我们只要与 Channel 打交道，就得通过 Buffer。Buffer的本质其实就是一个数组， 只不过 wrap 了很多方法来方便我们读写。</p>
+
+<p>Buffer的正确使用方式：</p>
+
+<ul>
+<li>Write data into the Buffer</li>
+<li>Call buffer.flip()</li>
+<li>Read data out of the Buffer</li>
+<li>Call buffer.clear() or buffer.compact()</li>
+</ul>
+
+<p>写数据的时候，Buffer 会有个指针记录我们写到哪里了，一旦我们需要读了，我们就要 filp 把 Buffer 转换为读模式，当我们读取完毕后，就可以调用 clear 或者 compact 清除数据，compact会把所有未读的数据拷贝到前面，就像名字一样，clear其实只需要更新指针就可以啦。</p>
+
+<p>Buffer 有三个非常重要的属性我们需要知道，</p>
+
+<ul>
+<li>capacity</li>
+<li>position</li>
+<li>limit</li>
+</ul>
+
+<p>capacity 不论是读还是写模式都是一样的，position 和 limit 会根据读写模式进行改变。</p>
+
+<p>写的时候，position 初始为0，一直能写到 capacity - 1。
+当我们读的时候 flip， position 就变成了0，我们开始读，直接来看 flip 的源码。</p>
+
+<pre><code class="language-java">public final Buffer flip() {
+    // 很好懂
+    limit = position;
+    position = 0;
+    mark = -1;
+    return this;
+}
+</code></pre>
+
+<p>limit 写模式的时候就等于 capacity，读的时候我们就把 limit 设置成刚刚写入的位置，限制读多少。</p>
+
+<h3 id="如何使用-buffer">如何使用 Buffer</h3>
+
+<pre><code class="language-java">ByteBuffer buf = ByteBuffer.allocate(48);
+CharBuffer buf = CharBuffer.allocate(1024);
+
+// 写数据有两种方式
+int bytesRead = inChannel.read(buf); //read into buffer.
+buf.put(127);    
+
+//read from buffer into channel.
+int bytesWritten = inChannel.write(buf);
+byte aByte = buf.get();    
+
+// equals() and compareTo() 可以比较两个buffer
+
+</code></pre>
+
+<p>这里不罗列 API 了。</p>
+
+<h2 id="scatter-和-gather">Scatter 和 Gather</h2>
+
+<p>看名字就知道，有点批量操作的意思。</p>
+
+<p>一次 scattering read 可以让我们把一个 Channel 的数据读到多个 Buffer 中。
+一次 gathering write 可以把多个 Buffer 的数据 写到一个 Channel 中。</p>
+
+<pre><code class="language-java">ByteBuffer header = ByteBuffer.allocate(128);
+ByteBuffer body   = ByteBuffer.allocate(1024);
+
+ByteBuffer[] bufferArray = { header, body };
+
+channel.read(bufferArray);
+</code></pre>
+
+<h2 id="selector-1">Selector</h2>
+
+<p>下面是重头戏 Selector，这里稍微可以介绍一下 Select 和 Epoll 的原理。</p>
+
+<h3 id="select-和-epoll">Select 和 Epoll</h3>
+
+<p>这里是形象化的介绍，便于理解，具体深入还得学习 Linux 的具体实现。简单来说，一个 Thread 读取一个 Socket fd 的时候，如果此时数据尚未准备好，该进程就会加入该 fd 的等待队列，等数据准备好，内核才会把线程唤醒处理数据。</p>
+
+<p>那么我们如果要让一个线程监听多个 Socket 该如何做呢？ 容易想到的做法是把 Thread 加入到多个 fd 的等待队列中，这样任何一个 Socket 数据准备好了，都会唤醒 Thread 。</p>
+
+<p>但是显然这样做的缺点是，我们上层应用程序要轮询多个 fd，看到底是哪个唤醒的，哪个有数据了。这样开销太大了。并且 Select 每次都要传递多个 fd，同时只支持1024个文件描述符。</p>
+
+<p>之后 Epoll 就闪亮登场了， Java NIO 会根据底层的支持程度选择不同的多路复用机制。Epoll 简单来说引入了一个中间件 EventPoll，计算机中的一切问题都可以通过加中间件来解决hh。然后呢，这个 EventPoll 会维护所有监听的 socket，并且拥有一个 rdlist 存放就绪的 socket 列表。那么我们的线程只需要持有 EventPoll即可，中断程序会唤醒 EventPoll 等待队列中的进程，并且修改 rdlist，此时我们的线程不需要遍历就知道哪个有数据。所以说 Epoll 是 O(1)的，Select是 O(N)的。</p>
+
+<p>同时，我们思考维护所有 socket 的数据结构应该用什么来实现，必须高效检索、删除和添加，实际上 Linux 就是用的红黑树，而 rdlist 就只需要双向链表即可，因为不需要高效的查询判断重复。</p>
+
+<h3 id="selector-原理和使用">Selector 原理和使用</h3>
+
+<p>好了，说完了操作系统底层的多路复用机制，回到我们的 Selector。</p>
+
+<p>Selector的好处就是我们可以用一个线程来处理多个 Channel，为什么多线程不好？</p>
+
+<ul>
+<li>一个线程在 512k - 1MB 的大小，多个线程空间消耗大。</li>
+<li>操作系统多线程切换很 expensive。</li>
+</ul>
+
+<p>但是我们要知道，现在计算机都有多核，确实是对多线程有很好的支持。
+所以我们如果光用一个线程来 handle 也是没有利用好资源的，这个就超出本文的范围了。</p>
+
+<p>如下代码可以注册一个 channel 到 selector。</p>
+
+<pre><code class="language-java">Selector selector = Selector.open();
+
+channel.configureBlocking(false);
+
+SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
+</code></pre>
+
+<p>注意， FileChannel 是不可以配置成非阻塞的，要与 selector 配合必须设成非阻塞。</p>
+
+<p>我们注意到上面 register 第二个参数，是我们感兴趣的事件类型。</p>
+
+<ul>
+<li>SelectionKey.OP_CONNECT</li>
+<li>SelectionKey.OP_ACCEPT</li>
+<li>SelectionKey.OP_READ</li>
+<li>SelectionKey.OP_WRITE</li>
+</ul>
+
+<p>然后我们来看一个完整的例子就可以理解 Selector 的用法了。</p>
+
+<pre><code class="language-java">Selector selector = Selector.open();
+
+channel.configureBlocking(false);
+
+SelectionKey key = channel.register(selector, SelectionKey.OP_READ);
+
+while(true) {
+    // selectNow不会阻塞 返回有几个channel准备好了
+    int readyChannels = selector.selectNow();
+
+    if(readyChannels == 0) continue;
+
+    // 准备好的channel 返回selectedKeys
+    Set&lt;SelectionKey&gt; selectedKeys = selector.selectedKeys();
+
+    Iterator&lt;SelectionKey&gt; keyIterator = selectedKeys.iterator();
+
+    // 遍历每个依次处理
+    while(keyIterator.hasNext()) {
+
+        SelectionKey key = keyIterator.next();
+
+        if(key.isAcceptable()) {
+            // a connection was accepted by a ServerSocketChannel.
+
+        } else if (key.isConnectable()) {
+            // a connection was established with a remote server.
+
+        } else if (key.isReadable()) {
+            // a channel is ready for reading
+
+        } else if (key.isWritable()) {
+            // a channel is ready for writing
+        }
+
+        keyIterator.remove();
+    }
+}
+</code></pre>
+
+<p>顺嘴提一句，FileChannel 除了面向块之外，跟之前标准 IO 底层没有什么不同，只是封装了一下。</p>
+
+<h2 id="socketchannel">SocketChannel</h2>
+
+<p>SocketChannel 是一个TCP socket的连接，有两种方式一个 SocketChannel 会被创建，</p>
+
+<ul>
+<li>我们手动创建一个 然后 connect 到一个 remoting server。</li>
+<li>通过 ServerSocket 接收连接会创建 SocketChannel</li>
+</ul>
+
+<pre><code class="language-java">SocketChannel socketChannel = SocketChannel.open();
+socketChannel.connect(new InetSocketAddress(&quot;http://goodjuice.com&quot;, 80));
+
+ByteBuffer buf = ByteBuffer.allocate(48);
+
+int bytesRead = socketChannel.read(buf);
+
+// 写入 channel
+String newData = &quot;New String to write to file...&quot; + System.currentTimeMillis();
+
+ByteBuffer buf = ByteBuffer.allocate(48);
+buf.clear();
+buf.put(newData.getBytes());
+
+buf.flip();
+
+while(buf.hasRemaining()) {
+    channel.write(buf);
+}
+</code></pre>
+
+<p>其实上面的操作是堵塞的，我们可以将 channle 设为非堵塞模式，就可以调用非堵塞的方法。</p>
+
+<pre><code class="language-java">socketChannel.configureBlocking(false);
+socketChannel.connect(new InetSocketAddress(&quot;http://goodjuice.me&quot;, 80));
+
+// 非堵塞 所以我们要用 loop
+while(! socketChannel.finishConnect() ){
+    //wait, or do something else...    
+}
+
+// 其他读写操作跟上面没有什么不同
+</code></pre>
+
+<p>那这样的例子你可能觉得毫无波动，这有啥改进的。但是配合 Selector 来管理我们的众多 SocketChannel 就非常有用。我们可以知道哪一个好了，我们就来处理。</p>
+
+<h2 id="serversocketchannel">ServerSocketChannel</h2>
+
+<p>ServerSocketChannel 就对于普通 IO 中的 ServerSocket。</p>
+
+<pre><code class="language-java">Selector selector = Selector.open();
+ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+serverSocketChannel.bind(new InetSocketAddress(80));
+
+serverSocketChannel.configureBlocking(false);
+
+// 监听这个 channel 的 accept事件
+serverSocketChannel.register(selector, SelectionKey.OP_ACCEPT);
+
+while (true){
+
+    int readyChannels = selector.select();
+
+    if (readyChannels == 0) continue;
+
+    Set&lt;SelectionKey&gt; selectionKeys = selector.selectedKeys();
+
+    Iterator iterator = selectionKeys.iterator();
+
+    while (iterator.hasNext()){
+        SelectionKey selectionKey = (SelectionKey) iterator.next();
+        iterator.remove();
+
+        // 处理新的连接
+        if(selectionKey.isAcceptable()){
+            acceptHandler(serverSocketChannel, selector);
+        }
+
+        // 处理可读事件
+        if(selectionKey.isReadable()){
+            readHandler(selectionKey, selector);
+        }
+    }
+}
+
+// 连接 handler
+private  void acceptHandler(ServerSocketChannel serverSocketChannel,Selector selector) throws IOException {
+
+    // 将该socketChannel注册到selector  感兴趣 readable
+    SocketChannel socketChannel = serverSocketChannel.accept();
+    socketChannel.configureBlocking(false);
+    socketChannel.register(selector, SelectionKey.OP_READ);
+}
+</code></pre>
+
+<h2 id="ending">Ending</h2>
+
+<p>总结一下，NIO我们要掌握最最核心的的三个概念，</p>
+
+<ul>
+<li>Channel</li>
+<li>Buffer</li>
+<li>Selector</li>
+</ul>
+
+<p>往下我们还应该去学习Selector底层是怎么实现的，操作系统的多路复用机制。</p>
+
+<p>往上我们应该学习非常著名的框架 Netty，Netty 对 Java NIO 做了非常出色的封装，以后准备深入阅读 Netty
+的源码~</p>
+
+                </section>
+            </article>
+
+            
+
+            
+                <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'https-lunaticf-github-io'; 
+
+     
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+            
+
+            
+
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.github.com/Lunaticf">
+        <i class="fa fa-github-square"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+       © Copyright 2020 <i class="fa fa-heart" aria-hidden="true"></i> Lunaticf
+    
+    </p>
+    <script src="https://lunaticf.github.io/live2d/autoload.js"></script>
+</footer>
+
+        </section>
+
+        <script src="https://lunaticf.github.io/js/jquery-3.3.1.min.js"></script>
+<script src="https://lunaticf.github.io/js/main.js"></script>
+<script src="https://lunaticf.github.io/js/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'your_google_analytics_id', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+
+
+
+    </body>
+</html>
