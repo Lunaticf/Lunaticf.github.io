@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Java on 添忧杂货铺</title>
+    <title>java on 添忧杂货铺</title>
     <link>https://lunaticf.github.io/categories/java/</link>
-    <description>Recent content in Java on 添忧杂货铺</description>
+    <description>Recent content in java on 添忧杂货铺</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
     <lastBuildDate>Sun, 16 Feb 2020 14:34:41 +0800</lastBuildDate>
@@ -18,6 +18,15 @@
       
       <guid>https://lunaticf.github.io/posts/java-nio/</guid>
       <description>山沓水匝，树杂云合。目既往还，心亦吐纳。春日迟迟，秋风飒飒。情往似赠，兴来如答。&amp;mdash; 刘勰 Overview 首先，NIO 可以理解为 Non-blocking IO。当一个 Thread 要</description>
+    </item>
+    
+    <item>
+      <title>Tiny Spring</title>
+      <link>https://lunaticf.github.io/posts/tiny-spring/</link>
+      <pubDate>Mon, 10 Feb 2020 01:11:29 +0800</pubDate>
+      
+      <guid>https://lunaticf.github.io/posts/tiny-spring/</guid>
+      <description>人生如逆旅，我亦是行人。&amp;mdash; 苏轼 逛 Github 发现有个 tiny-spring 项目很好~，已经 3k star 了。本意是因为 Spring 的源码层次过多比较复杂，不适合初学者学习，所以简</description>
     </item>
     
     <item>

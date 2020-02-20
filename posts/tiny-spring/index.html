@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		 
+			
+  
+    <meta name="twitter:card" content="summary"/>
+    
+      <meta name="twitter:image" content="https://lunaticf.github.io/images/avatar.png" />
+    
+  
+  
+  <meta name="twitter:title" content="Tiny Spring"/>
+  <meta name="twitter:description" content="人生如逆旅，我亦是行人。&mdash; 苏轼 逛 Github 发现有个 tiny-spring 项目很好~，已经 3k star 了。本意是因为 Spring 的源码层次过多比较复杂，不适合初学者学习，所以简"/>
+  
+  
+  
+  
+    <meta name="twitter:creator" content="@Lunaticf"/>
+  
+
+
+
+		
+		<meta name="author" content="Lunaticf">
+		<meta name="description" content="添忧杂货铺">
+		<meta name="generator" content="Hugo 0.55.6" />
+		<title>Tiny Spring &middot; 添忧杂货铺</title>
+		<link rel="shortcut icon" href="https://lunaticf.github.io/images/favicon.ico">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/style.css">
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/highlight.css">
+
+		
+		<link rel="stylesheet" href="https://lunaticf.github.io/css/font-awesome.min.css">
+		
+
+		
+		<link href="https://lunaticf.github.io/index.xml" rel="alternate" type="application/rss+xml" title="添忧杂货铺" />
+		
+
+		
+	</head>
+
+    <body>
+       <nav class="main-nav">
+	
+	
+		<a href='https://lunaticf.github.io/'> <span class="arrow">←</span>Home</a>
+	
+	<a href='https://lunaticf.github.io/posts'>Archive</a>
+	<a href='https://lunaticf.github.io/tags'>Tags</a>
+	<a href='https://lunaticf.github.io/about'>About</a>
+
+	
+</nav>
+
+
+        <section id="wrapper" class="post">
+            <article>
+                <header>
+                    <h1>
+                        Tiny Spring
+                    </h1>
+                    <h2 class="headline">
+                    Feb 10, 2020 01:11
+                    · 2896 words
+                    · 6 minute read
+                      <span class="tags">
+                      
+                      
+                          
+                              <a href="https://lunaticf.github.io/tags/java">java</a>
+                          
+                      
+                      
+                      </span>
+                    </h2>
+                </header>
+                
+                <section id="post-body">
+                    
+
+<blockquote>
+<p><font face="STCAIYUN">人生如逆旅，我亦是行人。&mdash; 苏轼</font></p>
+</blockquote>
+
+<p>逛 Github 发现有个 tiny-spring 项目很好~，已经 3k star 了。本意是因为 Spring 的源码层次过多比较复杂，不适合初学者学习，所以简易的实现了 Spring 的核心功能，并且循序渐进，模仿了 Spring 的命名。</p>
+
+<p>于是这里做一个整理和分析，有助于之后自己对 Spring 源码的深入阅读和学习。</p>
+
+<h2 id="1-最基本的容器">1 - 最基本的容器</h2>
+
+<p>第一版比较简单，首先写了一个 BeanDefinition，这里只是一个生成好的 bean 的 wrapper。</p>
+
+<pre><code class="language-java">public class BeanDefinition {
+
+    private Object bean;
+
+    public BeanDefinition(Object bean) {
+        this.bean = bean;
+    }
+
+    public Object getBean() {
+        return bean;
+    }
+}
+</code></pre>
+
+<p>Spring中最顶层的接口BeanFactory的模拟，</p>
+
+<pre><code class="language-java">public class BeanFactory {
+
+	private Map&lt;String, BeanDefinition&gt; beanDefinitionMap = new ConcurrentHashMap&lt;String, BeanDefinition&gt;();
+
+	public Object getBean(String name) {
+		return beanDefinitionMap.get(name).getBean();
+	}
+
+	public void registerBeanDefinition(String name, BeanDefinition beanDefinition) {
+		beanDefinitionMap.put(name, beanDefinition);
+	}
+}
+</code></pre>
+
+<p>可以看到比较简单，我们可以注册 bean，并且通过注册的 name 获取到 bean。</p>
+
+<h2 id="2-beanfactory-来创建-bean">2 - BeanFactory 来创建 Bean</h2>
+
+<p>你一定发现了上面这个都是我们自己创建好对象放进去的，没什么好玩的。那么现在就让容器帮我们创建和管理 Bean，把 BeanFactory 提升为接口把，就像在 Spring 中一样。</p>
+
+<pre><code class="language-java">public interface BeanFactory {
+    Object getBean(String name);
+
+    void registerBeanDefinition(String name, BeanDefinition beanDefinition);
+}
+</code></pre>
+
+<p>简单两个方法，获取 bean，注册 beanDefinition。</p>
+
+<p>相应的，我们的 beanDefinition 肯定不能只是一个 Wrapper 了，而是我们创建 Bean 的依据。</p>
+
+<pre><code class="language-java">public class BeanDefinition {
+
+	private Object bean;
+
+	private Class beanClass;
+
+	private String beanClassName;
+}
+</code></pre>
+
+<h3 id="abstractbeanfactory">AbstractBeanFactory</h3>
+
+<pre><code class="language-java">public abstract class AbstractBeanFactory implements BeanFactory {
+    // 由子类具体实现的抽象方法
+    protected abstract Object doCreateBean(BeanDefinition beanDefinition);
+}
+</code></pre>
+
+<p>然后就是实现了 BeanFactory 的两个方法，这里是我们注册 beanDefinition 的时候就会创建 bean，保存起来。</p>
+
+<h3 id="autowirecapablebeanfactory">AutowireCapableBeanFactory</h3>
+
+<p>看名字就知道，是可自动装配的 BeanFactory 具体实现类。</p>
+
+<pre><code class="language-java">public class AutowireCapableBeanFactory extends AbstractBeanFactory {
+
+    @Override
+    protected Object doCreateBean(BeanDefinition beanDefinition) {
+        // 略去了错误处理代码
+        // 核心代码 创建bean
+        Object bean = beanDefinition.getBeanClass().newInstance();
+        return bean;
+    }
+}
+</code></pre>
+
+<p>至此第二个版本就完成了，现在我们是由容器来帮我们创建 bean，我们在外部不需要自己创建对象，只需要给出 bean 的 name 和类名。</p>
+
+<pre><code class="language-java">// 1.初始化beanfactory
+BeanFactory beanFactory = new AutowireCapableBeanFactory();
+
+// 2.注入bean
+BeanDefinition beanDefinition = new BeanDefinition();
+beanDefinition.setBeanClassName(&quot;us.codecraft.tinyioc.HelloWorldService&quot;);
+beanFactory.registerBeanDefinition(&quot;helloWorldService&quot;, beanDefinition);
+
+// 3.获取bean
+HelloWorldService helloWorldService = (HelloWorldService) beanFactory.getBean(&quot;helloWorldService&quot;);
+</code></pre>
+
+<h3 id="3-为-bean-注入属性">3 - 为 Bean 注入属性</h3>
+
+<p>到目前为止还远远不够，还记得我们在 Spring 的 XML 配置文件中，能够对一个 Bean 进行属性的注入和指定吗？这个版本就来实现它，那么我们自然要在 beanDefinition 中增加属性的描述信息，这里叫做 PropertyValue，然后我们初始化 bean 的时候根据这个 PropertyValue 来注入。</p>
+
+<p>这里我们的 AutowireCapableBeanFactory 的 doCreateBean 要发生一些变化，因为要注入属性。</p>
+
+<pre><code class="language-java">@Override
+protected Object doCreateBean(BeanDefinition beanDefinition) throws Exception {
+    Object bean = createBeanInstance(beanDefinition);
+    applyPropertyValues(bean, beanDefinition);
+    return bean;
+}
+
+// 根据 beanDefinition 用反射注入属性
+protected void applyPropertyValues(Object bean, BeanDefinition mbd) throws Exception {
+
+    // 这里的命名很差劲，又封装了一层但是使用相同的名字。
+    for (PropertyValue propertyValue : mbd.getPropertyValues().getPropertyValues()) {
+        // 根据该属性的名字 获取对应的字段
+        Field declaredField = bean.getClass().getDeclaredField(propertyValue.getName());
+        declaredField.setAccessible(true);
+        // 注入
+        declaredField.set(bean, propertyValue.getValue());
+    }
+}
+</code></pre>
+
+<p>好，现在再来看看我们的 tiny-spring 是如何运作的~，现在我们的 tiny-spring 已经能进行简单的依赖注入啦，虽然是我们给的依赖&hellip;，应该到容器里自己找才对哦。</p>
+
+<pre><code class="language-java">
+// 字段名 text -&gt; Hello World!
+PropertyValues propertyValues = new PropertyValues();
+propertyValues.addPropertyValue(new PropertyValue(&quot;text&quot;, &quot;Hello World!&quot;));
+beanDefinition.setPropertyValues(propertyValues);
+
+beanFactory.registerBeanDefinition(&quot;helloWorldService&quot;, beanDefinition);
+</code></pre>
+
+<p>总结一下，第三个版本我们实现了非常非常 naive 的依赖注入，依赖是我们自己给的，只是容器创建 bean 的时候，根据 beanDefinition 存放的属性值去反射 set 了一下属性。</p>
+
+<h2 id="4-xml-配置来初始化-beandefinition">4 - XML 配置来初始化 BeanDefinition</h2>
+
+<p>上面的代码配置方式实在是看不下去了，我们还是读取 XML 来生成 Bean 的定义吧，我们定义一个 BeanDefinitionReader 接口，先实现一个实现类 XmlBeanDefinitionReader。</p>
+
+<p>在实现 BeanDefinitionReader 之前，我们要了解一个 Resource 的概念，Resource是spring内部定位资源的接口，也是 Java 中定义资源的一个概念，总之就是表示一个资源。</p>
+
+<blockquote>
+<p>Finds the resource with the given name.  A resource is some data
+     * (images, audio, text, etc) that can be accessed by class code in a way
+     * that is independent of the location of the code.</p>
+</blockquote>
+
+<pre><code class="language-java">public interface Resource {
+    InputStream getInputStream() throws IOException;
+}
+
+public class ResourceLoader {
+    public Resource getResource(String location){
+        // 直接用类加载器加载资源
+        URL resource = this.getClass().getClassLoader().getResource(location);
+        return new UrlResource(resource);
+    }
+}
+
+public class UrlResource implements Resource {
+
+    private final URL url;
+
+    public UrlResource(URL url) {
+        this.url = url;
+    }
+
+    // 我们的目的就是拿到这个 inputStream 而已
+    // 就能够从这个里面读数据了
+    @Override
+    public InputStream getInputStream() throws IOException{
+        URLConnection urlConnection = url.openConnection();
+        urlConnection.connect();
+        return urlConnection.getInputStream();
+    }
+}
+</code></pre>
+
+<p>我们现在能加载资源了！轮到 BeanDefinitionReader 出场，把我们的资源变成 BeanDefinition！
+再供给我们的 BeanFactory 使用，怎么样，是不是清晰了很多。</p>
+
+<pre><code class="language-java">public interface BeanDefinitionReader {
+    void loadBeanDefinitions(String location) throws Exception;
+}
+</code></pre>
+
+<p>这里解析 XML 的代码我们就不贴了，就是那些解析 XML 节点啊啥的代码，又臭又长。
+倒是可以看看 XML 配置文件，怎么样，是不是有点意思了~</p>
+
+<pre><code class="language-xml">&lt;bean name=&quot;helloWorldService&quot; class=&quot;us.codecraft.tinyioc.HelloWorldService&quot;&gt;
+    &lt;property name=&quot;text&quot; value=&quot;Hello World!&quot;&gt;&lt;/property&gt;
+&lt;/bean&gt;
+</code></pre>
+
+<p>总结一下第四个版本，这个版本我们并没有做什么修改，BeanFactory 我们不用动，因为他还是根据 BeanDefinition 来创建 Bean。区别是我们这回从 XML 文件里读取并解析 BeanDefinition，
+BeanDefinition 现在保存在 XmlBeanDefinitionReader 里，我们再把 BeanDefinition 注册到 BeanFactory，BeanFactory此时就生成 Bean。</p>
+
+<h2 id="5-为bean注入bean">5 - 为bean注入bean</h2>
+
+<p>出大问题，我们的容器还是不能给 bean 注入 bean，记得吗，我们的依赖的属性是我们外部生成好对象之后注入的，并且 XML 的方式也目前做不到，只能给个字符串类型。</p>
+
+<p>那么我们这个版本就要处理对象的依赖注入。</p>
+
+<pre><code class="language-java">&lt;bean name=&quot;outputService&quot; class=&quot;us.codecraft.tinyioc.OutputService&quot;&gt;
+    &lt;property name=&quot;helloWorldService&quot; ref=&quot;helloWorldService&quot;&gt;&lt;/property&gt;
+&lt;/bean&gt;
+
+&lt;bean name=&quot;helloWorldService&quot; class=&quot;us.codecraft.tinyioc.HelloWorldService&quot;&gt;
+    &lt;property name=&quot;text&quot; value=&quot;Hello World!&quot;&gt;&lt;/property&gt;
+    &lt;property name=&quot;outputService&quot; ref=&quot;outputService&quot;&gt;&lt;/property&gt;
+&lt;/bean&gt;
+</code></pre>
+
+<p>效果是上面这样的，你可以看到，我们顺便展示了一个循环依赖的问题。要解决循环依赖，我们只需要采用先创建后注入的方式，所以不会出现死锁。</p>
+
+<p>我们定义一个 BeanReference 表示这个属性是对另一个 Bean 的引用。</p>
+
+<pre><code class="language-java">public class BeanReference {
+
+    private String name;
+
+    private Object bean;
+}
+</code></pre>
+
+<p>我们 getBean 的时候会生成 Bean，</p>
+
+<pre><code class="language-java">protected void applyPropertyValues(Object bean, BeanDefinition mbd) throws Exception {
+    for (PropertyValue propertyValue : mbd.getPropertyValues().getPropertyValues()) {
+        Field declaredField = bean.getClass().getDeclaredField(propertyValue.getName());
+        declaredField.setAccessible(true);
+        Object value = propertyValue.getValue();
+        // 如果是对象引用
+        if (value instanceof BeanReference) {
+            BeanReference beanReference = (BeanReference) value;
+            value = getBean(beanReference.getName());
+        }
+        declaredField.set(bean, value);
+    }
+}
+</code></pre>
+
+<p>简单来说就是先创建放到容器里，再解析属性。</p>
+
+<h2 id="6-applicationcontext-登场">6 - ApplicationContext 登场</h2>
+
+<p>我们熟知的 ApplicationContext 比 BeanFactory 要更加强大，我看了一下源码，这里的 ApplicationContext 主要是使用更方便，并且增加了 refresh 这一 Spring 中的方法。</p>
+
+<pre><code class="language-java">public interface ApplicationContext extends BeanFactory {
+}
+
+
+// 可以看到，其实就是把我们刚刚 BeanFactory 做的事情封装了一下，现在只需要传配置的地址 比较方便
+public class ClassPathXmlApplicationContext extends AbstractApplicationContext {
+
+	private String configLocation;
+
+	public ClassPathXmlApplicationContext(String configLocation) throws Exception {
+		this(configLocation, new AutowireCapableBeanFactory());
+	}
+
+	public ClassPathXmlApplicationContext(String configLocation, AbstractBeanFactory beanFactory) throws Exception {
+		super(beanFactory);
+		this.configLocation = configLocation;
+		refresh();
+	}
+
+    // 初始化 读取 beanDefinition 注册
+	@Override
+	public void refresh() throws Exception {
+		XmlBeanDefinitionReader xmlBeanDefinitionReader = new XmlBeanDefinitionReader(new ResourceLoader());
+		xmlBeanDefinitionReader.loadBeanDefinitions(configLocation);
+		for (Map.Entry&lt;String, BeanDefinition&gt; beanDefinitionEntry : xmlBeanDefinitionReader.getRegistry().entrySet()) {
+			beanFactory.registerBeanDefinition(beanDefinitionEntry.getKey(), beanDefinitionEntry.getValue());
+		}
+	}
+}
+</code></pre>
+
+<h2 id="ioc容器-完工">IOC容器 完工</h2>
+
+<p>到目前为止，就实现了简单的 IOC 容器，虽然很 naive，但是把握住了精髓，命名也相同，适合我们快速掌握 Spring 的一些概念，再去深入学习。</p>
+
+<h2 id="7-使用jdk动态代理实现aop织入">7 - 使用JDK动态代理实现AOP织入</h2>
+
+<p>我的理解， aopalliance 应该就是一个规范，其中有两个重要的接口：</p>
+
+<h3 id="methodinterceptor">MethodInterceptor</h3>
+
+<pre><code class="language-java">public interface MethodInterceptor extends Interceptor {
+	
+    /**
+     * Implement this method to perform extra treatments before and
+     * after the invocation. Polite implementations would certainly
+     * like to invoke {@link Joinpoint#proceed()}.
+    */
+    Object invoke(MethodInvocation invocation) throws Throwable;
+}
+
+// 对应 Joinpoint 也就是 切点
+public interface MethodInvocation extends Invocation {
+    Method getMethod();
+}
+
+</code></pre>
+
+<p>可以看到，注释写的很清楚，方法的拦截器，定义我们 Advice 也就是具体逻辑。</p>
+
+<p>定义 AopProxy，有一个方法来获取被代理的对象。</p>
+
+<pre><code class="language-java">public interface AopProxy {
+
+    Object getProxy();
+}
+</code></pre>
+
+<p>先来看看基于 JDK 的动态代理是怎么实现的吧，</p>
+
+<pre><code class="language-java">public class AdvisedSupport {
+    // 被代理对象
+	private TargetSource targetSource;
+
+    // 被拦截的逻辑
+    private MethodInterceptor methodInterceptor;
+}
+
+// 被代理的对象
+public class TargetSource {
+
+	private Class targetClass;
+
+	private Object target;
+}
+
+public class JdkDynamicAopProxy implements AopProxy, InvocationHandler {
+
+	private AdvisedSupport advised;
+
+    // jdk 动态代理生成代理类
+    // 传入 this ，因为本类就实现了 InvocationHandler 接口
+    @Override
+	public Object getProxy() {
+		return Proxy.newProxyInstance(getClass().getClassLoader(), new Class[] { advised.getTargetSource()
+				.getTargetClass() }, this);
+	}
+
+	@Override
+	public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
+        // advised 里有我们定义的拦截器的具体逻辑
+		MethodInterceptor methodInterceptor = advised.getMethodInterceptor();
+		return methodInterceptor.invoke(new ReflectiveMethodInvocation(advised.getTargetSource().getTarget(), method,
+				args));
+	}
+}
+</code></pre>
+
+<h2 id="8-使用aspectj管理切面">8 - 使用AspectJ管理切面</h2>
+
+<p>上面我们实现了基本的动态代理，但是不灵活，因为不方便指定需要代理哪些类的哪些方法。
+这个逻辑就叫做 AOP 中的 Pointcut，这里我们借用 Aspect 的表达式编译器来处理。</p>
+
+<pre><code class="language-java">public void testMethodInterceptor() throws Exception {
+    // 定义拦截规则
+    String expression = &quot;execution(* us.codecraft.tinyioc.*.*(..))&quot;;
+
+    AspectJExpressionPointcut aspectJExpressionPointcut = new AspectJExpressionPointcut();
+    aspectJExpressionPointcut.setExpression(expression);
+    boolean matches = aspectJExpressionPointcut.getMethodMatcher().matches(HelloWorldServiceImpl.class.getDeclaredMethod(&quot;helloWorld&quot;),HelloWorldServiceImpl.class);
+    Assert.assertTrue(matches);
+}
+</code></pre>
+
+<p>这里实现了判断一个方法是否为要被拦截的逻辑，下面我们需要融入到 Spring 中。</p>
+
+<h2 id="9-将aop融入bean的创建过程">9 - 将AOP融入Bean的创建过程</h2>
+
+<p>Spring 使用 BeanPostProcessor 来处理织入，只要你的Bean实现了BeanPostProcessor接口，那么Spring在初始化时，会优先找到它们，并且在Bean的初始化过程中，调用这个接口，从而实现对BeanFactory核心无侵入的扩展。</p>
+
+<pre><code class="language-java">
+public interface BeanPostProcessor {
+
+	Object postProcessBeforeInitialization(Object bean, String beanName) throws Exception;
+
+	Object postProcessAfterInitialization(Object bean, String beanName) throws Exception;
+
+}
+</code></pre>
+
+<p>在 Spring 中，如果要代理的类实现了接口，就用默认的 JDK 动态代理，否则使用 cglib。</p>
+
+                </section>
+            </article>
+
+            
+
+            
+                <div id="disqus_thread"></div>
+<script type="text/javascript">
+    var disqus_shortname = 'https-lunaticf-github-io'; 
+
+     
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+            
+
+            
+
+            <footer id="footer">
+    
+        <div id="social">
+
+	
+	
+    <a class="symbol" href="https://www.github.com/Lunaticf">
+        <i class="fa fa-github-square"></i>
+    </a>
+    
+
+
+</div>
+
+    
+    <p class="small">
+    
+       © Copyright 2020 <i class="fa fa-heart" aria-hidden="true"></i> Lunaticf
+    
+    </p>
+    <script src="https://lunaticf.github.io/live2d/autoload.js"></script>
+</footer>
+
+        </section>
+
+        <script src="https://lunaticf.github.io/js/jquery-3.3.1.min.js"></script>
+<script src="https://lunaticf.github.io/js/main.js"></script>
+<script src="https://lunaticf.github.io/js/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+
+  
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'your_google_analytics_id', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+
+
+
+
+    </body>
+</html>
